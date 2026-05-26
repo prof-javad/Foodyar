@@ -2,19 +2,27 @@
 <html lang="fa" dir="rtl">
 
 <head>
+
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>فودیار 🍔</title>
 
   <link rel="stylesheet" href="style.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap"
-    rel="stylesheet">
+    rel="stylesheet"
+  />
+
 </head>
 
 <body>
@@ -25,17 +33,65 @@
       🍔 امروز چی میل کنیم؟
     </button>
 
-    <button id="toggleViewBtn" class="toggle-view-btn">
-      🔳
-    </button>
+    <div class="view-switcher">
+
+      <button class="view-btn active" data-cols="1">
+        ۱
+      </button>
+
+      <button class="view-btn" data-cols="2">
+        ۲
+      </button>
+
+      <button class="view-btn" data-cols="3">
+        ۳
+      </button>
+
+    </div>
 
   </div>
 
   <main class="container">
 
     <section class="hero">
-      <h1>فودیار 🍔</h1>
+
+      <h1>
+        فودیار 🍔
+      </h1>
+
     </section>
+
+    <!-- FAVORITE FILTER -->
+
+    <section class="favorite-filter">
+
+      <h3>
+        ❤️ فیلتر علاقه‌مندی‌ها
+      </h3>
+
+      <div class="favorite-filter-buttons">
+
+        <button class="favorite-filter-btn active" data-name="همه">
+          همه
+        </button>
+
+        <button class="favorite-filter-btn" data-name="مامان">
+          مامان
+        </button>
+
+        <button class="favorite-filter-btn" data-name="الهه">
+          الهه
+        </button>
+
+        <button class="favorite-filter-btn" data-name="جواد">
+          جواد
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- CATEGORY -->
 
     <section class="categories">
 
@@ -69,9 +125,13 @@
 
     </section>
 
+    <!-- ADD FOOD -->
+
     <section class="add-food-section">
 
-      <h2>➕ اضافه کردن غذا</h2>
+      <h2>
+        ➕ اضافه کردن غذا
+      </h2>
 
       <form id="foodForm">
 
@@ -133,8 +193,15 @@
 
     </section>
 
+    <!-- FOODS -->
+
     <section class="foods-section">
-      <div id="foodsContainer" class="foods-grid"></div>
+
+      <div
+        id="foodsContainer"
+        class="foods-grid"
+      ></div>
+
     </section>
 
   </main>
@@ -161,7 +228,7 @@
 
       <div id="randomFoodResult" class="random-result hidden">
 
-        <img id="randomFoodImage" src="" alt="">
+        <img id="randomFoodImage" src="" alt="" />
 
         <h2 id="randomFoodName"></h2>
 
