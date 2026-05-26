@@ -650,7 +650,7 @@ function updateAccessUI() {
   const form = document.getElementById("foodForm");
 
   if (form) {
-    form.style.display = isApprovedUser ? "block" : "none";
+    form.style.display = isApprovedUser ? "" : "none";
   }
 }
 
@@ -716,3 +716,43 @@ if (loginBtn) {
 if (logoutBtn) {
   logoutBtn.addEventListener("click", logoutUser);
 }
+
+
+// ===== UX FIXES =====
+
+function confirmLogout(){
+
+  const confirmed = confirm("آیا مطمئن هستی می‌خواهی خارج شوی؟");
+
+  if(!confirmed) return;
+
+  logoutUser();
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+  const logoutBtn=document.getElementById("logoutBtn");
+
+  if(logoutBtn){
+
+    const newBtn=logoutBtn.cloneNode(true);
+
+    logoutBtn.parentNode.replaceChild(newBtn,logoutBtn);
+
+    newBtn.addEventListener("click",confirmLogout);
+  }
+
+  const footerTools=document.getElementById("footerToolsGroup");
+
+  const importBtn=document.getElementById("importBtn");
+  const exportBtn=document.getElementById("exportBtn");
+  const layoutSwitcher=document.getElementById("layoutSwitcher");
+
+  [importBtn,exportBtn,layoutSwitcher].forEach(el=>{
+    if(el && footerTools){
+      footerTools.appendChild(el);
+    }
+  });
+
+});
+
