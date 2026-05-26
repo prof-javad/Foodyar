@@ -32,9 +32,6 @@ document.querySelectorAll(".category-btn");
 const favoriteFilterButtons =
 document.querySelectorAll(".favorite-filter-btn");
 
-const viewButtons =
-document.querySelectorAll(".view-btn");
-
 const randomBtn =
 document.getElementById("randomBtn");
 
@@ -64,9 +61,6 @@ document.getElementById("favoriteModal");
 
 const closeFavorite =
 document.querySelector(".close-favorite");
-
-const saveCustomName =
-document.getElementById("saveCustomName");
 
 const foodsRef =
 collection(db, "foods");
@@ -179,7 +173,6 @@ async function seedFoods(){
 
 // بروزرسانی دکمه‌های فیلتر علاقه‌مندی بر اساس غذاهای موجود
 function updateFavoriteFilterButtons() {
-  // جمع‌آوری تمام افرادی که حداقل یک غذا به اونها علاقه دارد
   const allFavoritePeople = new Set();
   
   foods.forEach(food => {
@@ -192,14 +185,11 @@ function updateFavoriteFilterButtons() {
     }
   });
   
-  // نمایش دکمه‌های فیلتر فقط برای افرادی که در غذاها وجود دارند
   const filterContainer = document.querySelector(".favorite-filter-buttons");
   if (!filterContainer) return;
   
-  // حفظ دکمه "همه"
   let newHtml = `<button class="chip favorite-filter-btn active" data-name="همه">همه</button>`;
   
-  // اضافه کردن دکمه فقط برای اعضایی که در غذاها وجود دارند
   ALLOWED_MEMBERS.forEach(member => {
     if (allFavoritePeople.has(member)) {
       newHtml += `<button class="chip favorite-filter-btn" data-name="${member}">${member}</button>`;
@@ -208,7 +198,6 @@ function updateFavoriteFilterButtons() {
   
   filterContainer.innerHTML = newHtml;
   
-  // ریلود event listenerها
   const newButtons = document.querySelectorAll(".favorite-filter-btn");
   newButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -238,38 +227,35 @@ function updateFavoriteFilterButtons() {
   });
 }
 
+// تابع اعمال همزمان فیلتر دسته‌بندی و علاقه‌مندی
+function getFilteredFoods() {
+  let filteredFoods = [...foods];
+
+  // فیلتر بر اساس دسته‌بندی
+  if(currentCategory !== "همه"){
+    filteredFoods = filteredFoods.filter(
+      (food) => food.category === currentCategory
+    );
+  }
+
+  // فیلتر بر اساس علاقه‌مندی
+  if(selectedFavoriteFilters.length > 0){
+    filteredFoods = filteredFoods.filter((food) => {
+      if (!food.favorites || !Array.isArray(food.favorites)) return false;
+      return selectedFavoriteFilters.every(
+        (person) => food.favorites.includes(person)
+      );
+    });
+  }
+
+  return filteredFoods;
+}
+
 function renderFoods(){
 
   foodsContainer.innerHTML = "";
 
-  let filteredFoods = [...foods];
-
-  if(currentCategory !== "همه"){
-
-    filteredFoods =
-    filteredFoods.filter(
-
-      (food)=>
-      food.category === currentCategory
-
-    );
-  }
-
-  if(selectedFavoriteFilters.length > 0){
-
-    filteredFoods =
-    filteredFoods.filter((food)=>{
-      
-      if (!food.favorites || !Array.isArray(food.favorites)) return false;
-      
-      // بررسی می‌کنیم که آیا غذا به همه افراد انتخاب شده علاقه دارد
-      return selectedFavoriteFilters.every(
-        (person) => food.favorites.includes(person)
-      );
-
-    });
-
-  }
+  const filteredFoods = getFilteredFoods();
 
   if (filteredFoods.length === 0) {
     foodsContainer.innerHTML = `<div class="empty-state">🍽️ غذایی یافت نشد</div>`;
@@ -303,6 +289,18 @@ function renderFoods(){
           ${food.category}
         </div>
 
+        <div class="favorite-list">
+
+          ${
+            food.favorites && food.favorites.length
+            ?
+            "❤️ " + food.favorites.join(" ، ")
+            :
+            "هنوز کسی علاقه‌مند نشده"
+          }
+
+        </div>
+
         <div class="card-actions">
 
           <button
@@ -325,18 +323,6 @@ function renderFoods(){
           >
             🗑 حذف
           </button>
-
-        </div>
-
-        <div class="favorite-list">
-
-          ${
-            food.favorites && food.favorites.length
-            ?
-            "❤️ " + food.favorites.join(" ، ")
-            :
-            "هنوز کسی علاقه‌مند نشده 😄"
-          }
 
         </div>
 
@@ -407,7 +393,7 @@ async function(id){
   }
 };
 
-// مدال ویرایش جدید
+// مدال ویرایش
 window.openEditModal = function(id) {
   const food = foods.find(f => f.firebaseId === id);
   if (!food) return;
@@ -454,14 +440,12 @@ function(id){
 
   selectedFoodId = id;
   
-  // بروزرسانی لیست دکمه‌های علاقه‌مندی در مدال
   const membersList = document.querySelector(".members-list");
   if (membersList) {
     membersList.innerHTML = ALLOWED_MEMBERS.map(member => 
       `<button class="member-btn" data-member="${member}">${member}</button>`
     ).join('');
     
-    // اضافه کردن event listener برای دکمه‌های جدید
     document.querySelectorAll(".member-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         addFavorite(btn.dataset.member);
@@ -472,29 +456,6 @@ function(id){
   favoriteModal.style.display =
   "flex";
 };
-
-saveCustomName?.addEventListener(
-"click",
-()=>{
-
-  const name =
-  document
-  .getElementById("customName")
-  .value
-  .trim();
-
-  if(!name) return;
-  
-  // فقط اعضای مجاز می‌توانند اضافه شوند
-  if (!ALLOWED_MEMBERS.includes(name)) {
-    alert("فقط مامان، الهه و جواد می‌توانند علاقه‌مند شوند!");
-    return;
-  }
-
-  addFavorite(name);
-  document.getElementById("customName").value = "";
-}
-);
 
 async function addFavorite(name){
 
@@ -510,10 +471,8 @@ async function addFavorite(name){
   [...(food.favorites || [])];
 
   if(!favorites.includes(name)){
-
     favorites.push(name);
   } else {
-    // اگر قبلاً علاقه داشته، حذفش کن (toggle)
     const index = favorites.indexOf(name);
     favorites.splice(index, 1);
   }
@@ -558,57 +517,10 @@ categoryButtons.forEach((button)=>{
 
 });
 
-viewButtons.forEach((btn)=>{
-
-  btn.addEventListener("click",()=>{
-
-    viewButtons.forEach(
-      (b)=>
-      b.classList.remove("active")
-    );
-
-    btn.classList.add("active");
-
-    const cols =
-    btn.dataset.cols;
-
-    foodsContainer.style.gridTemplateColumns =
-    `repeat(${cols},minmax(0,1fr))`;
-
-    localStorage.setItem(
-      "foodColumns",
-      cols
-    );
-
-  });
-
-});
-
-function loadColumns(){
-
-  const cols =
-  localStorage.getItem("foodColumns")
-  || 2;
-
-  foodsContainer.style.gridTemplateColumns =
-  `repeat(${cols},minmax(0,1fr))`;
-
-}
-
 randomBtn.addEventListener("click",()=>{
 
-  let visibleFoods =
-  [...foods];
-
-  if(currentCategory !== "همه"){
-
-    visibleFoods =
-    visibleFoods.filter(
-      (food)=>
-      food.category === currentCategory
-    );
-
-  }
+  // استفاده از تابع getFilteredFoods برای اعمال همزمان هر دو فیلتر
+  const visibleFoods = getFilteredFoods();
 
   if(!visibleFoods.length){
 
@@ -700,7 +612,5 @@ window.addEventListener(
 
 }
 );
-
-loadColumns();
 
 loadFoods();
