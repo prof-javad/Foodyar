@@ -35,16 +35,16 @@
 
     <div class="view-switcher">
 
-      <button class="view-btn active" data-cols="1">
-        ۱
-      </button>
-
-      <button class="view-btn" data-cols="2">
+      <button class="view-btn active" data-cols="2">
         ۲
       </button>
 
       <button class="view-btn" data-cols="3">
         ۳
+      </button>
+
+      <button class="view-btn" data-cols="4">
+        ۴
       </button>
 
     </div>
@@ -61,67 +61,30 @@
 
     </section>
 
-    <!-- FILTER BAR -->
-
+    <!-- FILTER BAR - طراحی جمع و جور جدید -->
     <section class="filter-bar">
 
-      <div class="mini-title">
-        🍽 دسته‌بندی
-      </div>
+      <div class="filter-row">
 
-      <div class="chips categories">
+        <div class="filter-group">
+          <span class="filter-icon">🍽️</span>
+          <div class="chips categories">
+            <button class="chip active category-btn" data-category="همه">همه</button>
+            <button class="chip category-btn" data-category="ایرانی">ایرانی</button>
+            <button class="chip category-btn" data-category="خارجی">خارجی</button>
+            <button class="chip category-btn" data-category="فست‌فود">فست‌فود</button>
+            <button class="chip category-btn" data-category="رژیمی">رژیمی</button>
+            <button class="chip category-btn" data-category="صبحانه">صبحانه</button>
+            <button class="chip category-btn" data-category="دسر">دسر</button>
+          </div>
+        </div>
 
-        <button class="chip active category-btn" data-category="همه">
-          همه
-        </button>
-
-        <button class="chip category-btn" data-category="ایرانی">
-          ایرانی
-        </button>
-
-        <button class="chip category-btn" data-category="خارجی">
-          خارجی
-        </button>
-
-        <button class="chip category-btn" data-category="فست‌فود">
-          فست‌فود
-        </button>
-
-        <button class="chip category-btn" data-category="رژیمی">
-          رژیمی
-        </button>
-
-        <button class="chip category-btn" data-category="صبحانه">
-          صبحانه
-        </button>
-
-        <button class="chip category-btn" data-category="دسر">
-          دسر
-        </button>
-
-      </div>
-
-      <div class="mini-title second-title">
-        ❤️ علاقه‌مندی
-      </div>
-
-      <div class="chips favorite-filter-buttons">
-
-        <button class="chip favorite-filter-btn active" data-name="همه">
-          همه
-        </button>
-
-        <button class="chip favorite-filter-btn" data-name="مامان">
-          مامان
-        </button>
-
-        <button class="chip favorite-filter-btn" data-name="الهه">
-          الهه
-        </button>
-
-        <button class="chip favorite-filter-btn" data-name="جواد">
-          جواد
-        </button>
+        <div class="filter-group">
+          <span class="filter-icon">❤️</span>
+          <div class="chips favorite-filter-buttons">
+            <button class="chip favorite-filter-btn active" data-name="همه">همه</button>
+          </div>
+        </div>
 
       </div>
 
@@ -253,20 +216,10 @@
         ⭐ چه کسی این غذا را دوست دارد؟
       </h3>
 
+      <p style="color:#888; font-size:0.8rem; margin:10px 0;">برای ثبت علاقه‌مندی کلیک کنید (کلیک مجدد برای حذف)</p>
+
       <div class="members-list">
-
-        <button class="member-btn">
-          مامان
-        </button>
-
-        <button class="member-btn">
-          الهه
-        </button>
-
-        <button class="member-btn">
-          جواد
-        </button>
-
+        <!-- دکمه‌ها با جاوااسکریپت پر می‌شوند -->
       </div>
 
     </div>
@@ -298,7 +251,7 @@
         <input
           type="url"
           id="editImage"
-          placeholder="لینک عکس"
+          placeholder="لینک عکس (اختیاری)"
         />
 
         <select id="editCategory">
