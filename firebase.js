@@ -28,7 +28,9 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  browserLocalPersistence,
+  setPersistence
 
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -46,6 +48,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+// تنظیم persistence برای ذخیره لاگین در localStorage
+await setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("Persistence error:", err);
+});
 
 // فعال کردن قابلیت آفلاین (ذخیره در IndexedDB)
 enableIndexedDbPersistence(db, {
