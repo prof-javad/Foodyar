@@ -884,3 +884,51 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+
+/* به انتهای فایل style.css اضافه کنید */
+
+/* Footer Actions */
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-buttons-group {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-icon-btn {
+  border: none;
+  background: linear-gradient(135deg, #f5f5f5, #fff);
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.footer-icon-btn:hover {
+  transform: translateY(-2px);
+  background: #fff0da;
+}
+
+/* حذف استایل‌های قدیمی topbar-actions چون به فوتر منتقل شدند */
+.topbar-actions {
+  display: none;
+}
+
+/* مخفی کردن پیام مهمان (حذف شده) */
+.guest-message {
+  display: none;
+}
