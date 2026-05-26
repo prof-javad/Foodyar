@@ -76,7 +76,13 @@
     <h2>➕ اضافه کردن خوراک</h2>
     <form id="foodForm">
       <input type="text" id="foodName" placeholder="اسم خوراک..." required />
-      <input type="url" id="foodImage" placeholder="لینک عکس خوراک (اختیاری)" />
+      
+      <div class="image-upload-group">
+        <input type="file" id="foodImageFile" accept="image/*" capture="environment" />
+        <label for="foodImageFile" class="upload-label">📸 انتخاب عکس از گالری یا دوربین</label>
+        <input type="url" id="foodImage" placeholder="یا لینک عکس خوراک (اختیاری)" />
+      </div>
+      
       <select id="foodCategory" required>
         <option value="">انتخاب دسته بندی</option>
         <option value="ایرانی">ایرانی</option>
@@ -146,7 +152,13 @@
         <img id="previewImg" src="" style="display: none;" />
       </div>
       <input type="text" id="editName" placeholder="اسم خوراک" />
-      <input type="url" id="editImage" placeholder="لینک عکس (اختیاری)" />
+      
+      <div class="image-upload-group">
+        <input type="file" id="editImageFile" accept="image/*" capture="environment" />
+        <label for="editImageFile" class="upload-label">📸 انتخاب عکس از گالری یا دوربین</label>
+      </div>
+      
+      <input type="url" id="editImage" placeholder="یا لینک عکس (اختیاری)" />
       <select id="editCategory">
         <option value="ایرانی">ایرانی</option>
         <option value="خارجی">خارجی</option>
