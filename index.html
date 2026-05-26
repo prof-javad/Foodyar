@@ -61,27 +61,65 @@
 
     </section>
 
-    <section class="favorite-filter">
+    <!-- FILTER BAR -->
 
-      <h3>
-        ❤️ فیلتر علاقه‌مندی‌ها
-      </h3>
+    <section class="filter-bar">
 
-      <div class="favorite-filter-buttons">
+      <div class="mini-title">
+        🍽 دسته‌بندی
+      </div>
 
-        <button class="favorite-filter-btn active" data-name="همه">
+      <div class="chips categories">
+
+        <button class="chip active category-btn" data-category="همه">
           همه
         </button>
 
-        <button class="favorite-filter-btn" data-name="مامان">
+        <button class="chip category-btn" data-category="ایرانی">
+          ایرانی
+        </button>
+
+        <button class="chip category-btn" data-category="خارجی">
+          خارجی
+        </button>
+
+        <button class="chip category-btn" data-category="فست‌فود">
+          فست‌فود
+        </button>
+
+        <button class="chip category-btn" data-category="رژیمی">
+          رژیمی
+        </button>
+
+        <button class="chip category-btn" data-category="صبحانه">
+          صبحانه
+        </button>
+
+        <button class="chip category-btn" data-category="دسر">
+          دسر
+        </button>
+
+      </div>
+
+      <div class="mini-title second-title">
+        ❤️ علاقه‌مندی
+      </div>
+
+      <div class="chips favorite-filter-buttons">
+
+        <button class="chip favorite-filter-btn active" data-name="همه">
+          همه
+        </button>
+
+        <button class="chip favorite-filter-btn" data-name="مامان">
           مامان
         </button>
 
-        <button class="favorite-filter-btn" data-name="الهه">
+        <button class="chip favorite-filter-btn" data-name="الهه">
           الهه
         </button>
 
-        <button class="favorite-filter-btn" data-name="جواد">
+        <button class="chip favorite-filter-btn" data-name="جواد">
           جواد
         </button>
 
@@ -89,37 +127,7 @@
 
     </section>
 
-    <section class="categories">
-
-      <button class="category-btn active" data-category="همه">
-        همه
-      </button>
-
-      <button class="category-btn" data-category="ایرانی">
-        ایرانی
-      </button>
-
-      <button class="category-btn" data-category="خارجی">
-        خارجی
-      </button>
-
-      <button class="category-btn" data-category="فست‌فود">
-        فست‌فود
-      </button>
-
-      <button class="category-btn" data-category="رژیمی">
-        رژیمی
-      </button>
-
-      <button class="category-btn" data-category="صبحانه">
-        صبحانه
-      </button>
-
-      <button class="category-btn" data-category="دسر">
-        دسر
-      </button>
-
-    </section>
+    <!-- ADD FOOD -->
 
     <section class="add-food-section">
 
@@ -139,8 +147,7 @@
         <input
           type="url"
           id="foodImage"
-          placeholder="لینک عکس غذا..."
-          required
+          placeholder="لینک عکس غذا (اختیاری)"
         />
 
         <select id="foodCategory" required>
@@ -182,7 +189,7 @@
       </form>
 
       <div id="successMessage" class="success-message">
-        ✅ غذا با موفقیت اضافه شد
+        ✅ غذا اضافه شد
       </div>
 
     </section>
@@ -198,7 +205,7 @@
 
   </main>
 
-  <!-- RANDOM MODAL -->
+  <!-- RANDOM -->
 
   <div id="randomModal" class="modal">
 
@@ -220,7 +227,7 @@
 
       <div id="randomFoodResult" class="random-result hidden">
 
-        <img id="randomFoodImage" src="" alt="" />
+        <img id="randomFoodImage" src="" />
 
         <h2 id="randomFoodName"></h2>
 
@@ -232,7 +239,7 @@
 
   </div>
 
-  <!-- FAVORITE MODAL -->
+  <!-- FAVORITE -->
 
   <div id="favoriteModal" class="favorite-modal">
 
@@ -262,16 +269,68 @@
 
       </div>
 
-      <div class="custom-member">
+    </div>
+
+  </div>
+
+  <!-- EDIT -->
+
+  <div id="editModal" class="favorite-modal">
+
+    <div class="favorite-content">
+
+      <span id="closeEdit" class="close-favorite">
+        &times;
+      </span>
+
+      <h3>
+        ✏️ ویرایش غذا
+      </h3>
+
+      <div class="edit-form">
 
         <input
           type="text"
-          id="customName"
-          placeholder="اسم جدید..."
+          id="editName"
+          placeholder="اسم غذا"
         />
 
-        <button id="saveCustomName">
-          ثبت
+        <input
+          type="url"
+          id="editImage"
+          placeholder="لینک عکس"
+        />
+
+        <select id="editCategory">
+
+          <option value="ایرانی">
+            ایرانی
+          </option>
+
+          <option value="خارجی">
+            خارجی
+          </option>
+
+          <option value="فست‌فود">
+            فست‌فود
+          </option>
+
+          <option value="رژیمی">
+            رژیمی
+          </option>
+
+          <option value="صبحانه">
+            صبحانه
+          </option>
+
+          <option value="دسر">
+            دسر
+          </option>
+
+        </select>
+
+        <button id="saveEditBtn">
+          ذخیره تغییرات
         </button>
 
       </div>
