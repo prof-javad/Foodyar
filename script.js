@@ -62,8 +62,9 @@ const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
 let currentUser = null;
 let isApprovedUser = false;
 
+// ایمیل‌های مجاز - ایمیل خود را اینجا وارد کنید
 const allowedEmails = [
-  "your-email@gmail.com",
+  "your-email@gmail.com",  // ایمیل خود را اینجا وارد کنید
   "mom@gmail.com",
   "family@gmail.com"
 ];
@@ -77,10 +78,8 @@ function showToast(message, type = "info") {
   
   // اگر نوتیفیکیشن وجود دارد، فقط محتوای آن را تغییر بده
   if (currentToast) {
-    //停止 timeout قبلی
     if (toastTimeout) clearTimeout(toastTimeout);
     
-    // تغییر محتوا
     const icons = {
       success: "✅",
       error: "❌",
@@ -89,7 +88,6 @@ function showToast(message, type = "info") {
     currentToast.innerHTML = `<span>${icons[type] || "ℹ️"}</span><span>${message}</span>`;
     currentToast.className = `toast ${type}`;
     
-    // ریست تایمر
     toastTimeout = setTimeout(() => {
       if (currentToast) {
         currentToast.style.animation = "toastSlideIn 0.3s reverse";
@@ -117,7 +115,6 @@ function showToast(message, type = "info") {
   container.appendChild(toast);
   currentToast = toast;
   
-  // حذف خودکار بعد از ۲ ثانیه
   toastTimeout = setTimeout(() => {
     if (currentToast) {
       currentToast.style.animation = "toastSlideIn 0.3s reverse";
@@ -183,7 +180,6 @@ function generateSkeletonCards(count = 8) {
 function startRealtimeSync() {
   if (unsubscribe) unsubscribe();
   
-  // نمایش اسکلتون
   generateSkeletonCards(8);
   skeletonContainer.style.display = "grid";
   foodsContainer.style.display = "none";
@@ -332,6 +328,9 @@ function renderFoods() {
     `;
     foodsContainer.appendChild(card);
   });
+  
+  // بعد از رندر کردن، دکمه‌ها را بر اساس وضعیت کاربر به‌روزرسانی کن
+  updateAccessUI();
 }
 
 function escapeHtml(str) {
@@ -344,42 +343,118 @@ function escapeHtml(str) {
   });
 }
 
-// ==================== ADD FOOD ====================
-foodForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  
-  const name = document.getElementById("foodName").value.trim();
-  const image = document.getElementById("foodImage").value.trim();
-  const category = document.getElementById("foodCategory").value;
-  
-  if (!name) {
-    showToast("لطفاً اسم خوراک را وارد کنید", "error");
-    return;
-  }
-  
-  if (!category) {
-    showToast("لطفاً دسته بندی را انتخاب کنید", "error");
-    return;
-  }
-  
+// ==================== PASTE IMAGE FROM CLIPBOARD ====================
+async function getImageFromClipboard() {
   try {
-    await addDoc(foodsRef, {
-      name,
-      image: image || "",
-      category,
-      favorites: []
-    });
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      showToast("مرورگر شما از چسباندن تصویر پشتیبانی نمی‌کند", "error");
+      return null;
+    }
     
-    foodForm.reset();
-    showToast("✅ خوراک اضافه شد", "success");
-  } catch (error) {
-    console.error("Error adding food:", error);
-    showToast("خطا در اضافه کردن خوراک", "error");
+    const clipboardItems = await navigator.clipboard.read();
+    
+    for (const clipboardItem of clipboardItems) {
+      const imageTypes = clipboardItem.types.filter(type => type.startsWith("image/"));
+      
+      for (const type of imageTypes) {
+        const blob = await clipboardItem.getType(type);
+        if (blob) {
+          return URL.createObjectURL(blob);
+        }
+      }
+    }
+    showToast("تصویری در کلیپ‌بورد یافت نشد", "info");
+    return null;
+  } catch (err) {
+    console.error("Clipboard read failed:", err);
+    if (err.name === "NotAllowedError") {
+      showToast("لطفاً ابتدا روی صفحه کلیک کنید سپس دوباره تلاش کنید", "error");
+    } else {
+      showToast("خطا در خواندن کلیپ‌بورد", "error");
+    }
+    return null;
   }
-});
+}
+
+// Paste for add food image field
+const foodImageInput = document.getElementById("foodImage");
+if (foodImageInput) {
+  foodImageInput.addEventListener("paste", async (e) => {
+    e.preventDefault();
+    const imageUrl = await getImageFromClipboard();
+    if (imageUrl) {
+      foodImageInput.value = imageUrl;
+      showToast("تصویر از کلیپ‌بورد چسبانده شد", "success");
+    }
+  });
+}
+
+// Paste for edit image field
+const editImageInput = document.getElementById("editImage");
+if (editImageInput) {
+  editImageInput.addEventListener("paste", async (e) => {
+    e.preventDefault();
+    const imageUrl = await getImageFromClipboard();
+    if (imageUrl) {
+      editImageInput.value = imageUrl;
+      const previewImg = document.getElementById("previewImg");
+      if (previewImg) {
+        previewImg.src = imageUrl;
+        previewImg.style.display = "block";
+      }
+      showToast("تصویر از کلیپ‌بورد چسبانده شد", "success");
+    }
+  });
+}
+
+// ==================== ADD FOOD ====================
+if (foodForm) {
+  foodForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    if (!isApprovedUser) {
+      showToast("فقط اعضای خانواده می‌توانند خوراک اضافه کنند", "error");
+      return;
+    }
+    
+    const name = document.getElementById("foodName").value.trim();
+    const image = document.getElementById("foodImage").value.trim();
+    const category = document.getElementById("foodCategory").value;
+    
+    if (!name) {
+      showToast("لطفاً اسم خوراک را وارد کنید", "error");
+      return;
+    }
+    
+    if (!category) {
+      showToast("لطفاً دسته بندی را انتخاب کنید", "error");
+      return;
+    }
+    
+    try {
+      await addDoc(foodsRef, {
+        name,
+        image: image || "",
+        category,
+        favorites: []
+      });
+      
+      foodForm.reset();
+      showToast("✅ خوراک اضافه شد", "success");
+    } catch (error) {
+      console.error("Error adding food:", error);
+      showToast("خطا در اضافه کردن خوراک", "error");
+    }
+  });
+}
 
 // ==================== DELETE FOOD ====================
 window.deleteFood = async function(id) {
+  if (!isApprovedUser) {
+    showToast("فقط اعضای خانواده می‌توانند حذف کنند", "error");
+    return;
+  }
+  
   if (confirm("آیا از حذف این خوراک مطمئن هستید؟")) {
     try {
       await deleteDoc(doc(db, "foods", id));
@@ -392,6 +467,11 @@ window.deleteFood = async function(id) {
 
 // ==================== EDIT MODAL ====================
 window.openEditModal = function(id) {
+  if (!isApprovedUser) {
+    showToast("فقط اعضای خانواده می‌توانند ویرایش کنند", "error");
+    return;
+  }
+  
   const food = foods.find(f => f.firebaseId === id);
   if (!food) return;
   
@@ -413,84 +493,64 @@ window.openEditModal = function(id) {
   editModal.style.display = "flex";
 };
 
-document.getElementById("editImage")?.addEventListener("input", (e) => {
-  const previewImg = document.getElementById("previewImg");
-  if (e.target.value) {
-    previewImg.src = e.target.value;
-    previewImg.style.display = "block";
-  } else {
-    previewImg.style.display = "none";
-  }
-});
-
-// ==================== PASTE IMAGE FROM CLIPBOARD ====================
-document.getElementById("editImage")?.addEventListener("paste", async (e) => {
-  e.preventDefault();
-  const clipboardData = e.clipboardData || window.clipboardData;
-  const items = clipboardData.items;
-  
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.indexOf("image") !== -1) {
-      const blob = items[i].getAsFile();
-      const url = URL.createObjectURL(blob);
-      document.getElementById("editImage").value = url;
-      const previewImg = document.getElementById("previewImg");
-      previewImg.src = url;
+const editImageField = document.getElementById("editImage");
+if (editImageField) {
+  editImageField.addEventListener("input", (e) => {
+    const previewImg = document.getElementById("previewImg");
+    if (e.target.value) {
+      previewImg.src = e.target.value;
       previewImg.style.display = "block";
-      showToast("تصویر از کلیپ‌بورد چسبانده شد (موقتی)", "info");
-      break;
+    } else {
+      previewImg.style.display = "none";
     }
-  }
-});
+  });
+}
 
-// Paste for add food image field
-document.getElementById("foodImage")?.addEventListener("paste", async (e) => {
-  e.preventDefault();
-  const clipboardData = e.clipboardData || window.clipboardData;
-  const items = clipboardData.items;
-  
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.indexOf("image") !== -1) {
-      const blob = items[i].getAsFile();
-      const url = URL.createObjectURL(blob);
-      document.getElementById("foodImage").value = url;
-      showToast("تصویر از کلیپ‌بورد چسبانده شد (موقتی)", "info");
-      break;
+const saveEditBtn = document.getElementById("saveEditBtn");
+if (saveEditBtn) {
+  saveEditBtn.addEventListener("click", async () => {
+    if (!isApprovedUser) {
+      showToast("فقط اعضای خانواده می‌توانند ویرایش کنند", "error");
+      return;
     }
-  }
-});
-
-document.getElementById("saveEditBtn")?.addEventListener("click", async () => {
-  const newName = document.getElementById("editName").value.trim();
-  const newImage = document.getElementById("editImage").value.trim();
-  const newCategory = document.getElementById("editCategory").value;
-  
-  if (!newName) {
-    showToast("لطفاً اسم خوراک را وارد کنید", "error");
-    return;
-  }
-  
-  try {
-    await updateDoc(doc(db, "foods", selectedFoodId), {
-      name: newName,
-      image: newImage,
-      category: newCategory
-    });
     
+    const newName = document.getElementById("editName").value.trim();
+    const newImage = document.getElementById("editImage").value.trim();
+    const newCategory = document.getElementById("editCategory").value;
+    
+    if (!newName) {
+      showToast("لطفاً اسم خوراک را وارد کنید", "error");
+      return;
+    }
+    
+    try {
+      await updateDoc(doc(db, "foods", selectedFoodId), {
+        name: newName,
+        image: newImage,
+        category: newCategory
+      });
+      
+      document.getElementById("editModal").style.display = "none";
+      showToast("✏️ خوراک ویرایش شد", "success");
+    } catch (error) {
+      showToast("خطا در ویرایش خوراک", "error");
+    }
+  });
+}
+
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+if (cancelEditBtn) {
+  cancelEditBtn.addEventListener("click", () => {
     document.getElementById("editModal").style.display = "none";
-    showToast("✏️ خوراک ویرایش شد", "success");
-  } catch (error) {
-    showToast("خطا در ویرایش خوراک", "error");
-  }
-});
+  });
+}
 
-document.getElementById("cancelEditBtn")?.addEventListener("click", () => {
-  document.getElementById("editModal").style.display = "none";
-});
-
-document.getElementById("closeEdit")?.addEventListener("click", () => {
-  document.getElementById("editModal").style.display = "none";
-});
+const closeEdit = document.getElementById("closeEdit");
+if (closeEdit) {
+  closeEdit.addEventListener("click", () => {
+    document.getElementById("editModal").style.display = "none";
+  });
+}
 
 // ==================== FAVORITE MODAL ====================
 window.openFavoriteModal = function(id) {
@@ -540,9 +600,11 @@ async function addFavorite(name) {
   }
 }
 
-closeFavorite.addEventListener("click", () => {
-  favoriteModal.style.display = "none";
-});
+if (closeFavorite) {
+  closeFavorite.addEventListener("click", () => {
+    favoriteModal.style.display = "none";
+  });
+}
 
 // ==================== CATEGORY FILTER ====================
 document.querySelectorAll(".category-btn").forEach((button) => {
@@ -586,112 +648,124 @@ viewColBtns.forEach((btn) => {
 });
 
 // ==================== RANDOM FOOD ====================
-randomBtn.addEventListener("click", () => {
-  const visibleFoods = getFilteredFoods();
+if (randomBtn) {
+  randomBtn.addEventListener("click", () => {
+    const visibleFoods = getFilteredFoods();
 
-  if (!visibleFoods.length) {
-    showToast("🍽️ خوراکی پیدا نشد!", "error");
-    return;
-  }
+    if (!visibleFoods.length) {
+      showToast("🍽️ خوراکی پیدا نشد!", "error");
+      return;
+    }
 
-  modal.style.display = "flex";
-  loadingSpinner.style.display = "block";
-  randomFoodResult.classList.add("hidden");
+    modal.style.display = "flex";
+    loadingSpinner.style.display = "block";
+    randomFoodResult.classList.add("hidden");
 
-  setTimeout(() => {
-    const food = visibleFoods[Math.floor(Math.random() * visibleFoods.length)];
-    
-    randomFoodImage.src = food.image || "https://via.placeholder.com/400x300?text=🍲";
-    randomFoodImage.alt = food.name;
-    randomFoodName.textContent = "😋 " + food.name;
-    randomFoodCategory.textContent = "دسته بندی: " + food.category;
-    
-    loadingSpinner.style.display = "none";
-    randomFoodResult.classList.remove("hidden");
-  }, 300);
-});
+    setTimeout(() => {
+      const food = visibleFoods[Math.floor(Math.random() * visibleFoods.length)];
+      
+      randomFoodImage.src = food.image || "https://via.placeholder.com/400x300?text=🍲";
+      randomFoodImage.alt = food.name;
+      randomFoodName.textContent = "😋 " + food.name;
+      randomFoodCategory.textContent = "دسته بندی: " + food.category;
+      
+      loadingSpinner.style.display = "none";
+      randomFoodResult.classList.remove("hidden");
+    }, 300);
+  });
+}
 
-closeModal.addEventListener("click", () => {
-  modal.style.display = "none";
-});
+if (closeModal) {
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+}
 
 // ==================== EXPORT BACKUP ====================
-exportBtn.addEventListener("click", () => {
-  const exportData = foods.map(food => ({
-    name: food.name,
-    category: food.category,
-    image: food.image || "",
-    favorites: food.favorites || [],
-    exportedAt: new Date().toISOString()
-  }));
-  
-  const dataStr = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `foods-backup-${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-  showToast(`💾 بکاپ گرفته شد (${exportData.length} خوراک)`, "success");
-});
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    const exportData = foods.map(food => ({
+      name: food.name,
+      category: food.category,
+      image: food.image || "",
+      favorites: food.favorites || [],
+      exportedAt: new Date().toISOString()
+    }));
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `foods-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast(`💾 بکاپ گرفته شد (${exportData.length} خوراک)`, "success");
+  });
+}
 
 // ==================== IMPORT BACKUP ====================
-importBtn.addEventListener("click", () => {
-  importModal.style.display = "flex";
-  importFile.value = "";
-});
+if (importBtn) {
+  importBtn.addEventListener("click", () => {
+    importModal.style.display = "flex";
+    importFile.value = "";
+  });
+}
 
-closeImport.addEventListener("click", () => {
-  importModal.style.display = "none";
-});
-
-confirmImportBtn.addEventListener("click", async () => {
-  if (!importFile.files || !importFile.files[0]) {
-    showToast("لطفاً فایل بکاپ را انتخاب کنید", "error");
-    return;
-  }
-  
-  try {
-    const file = importFile.files[0];
-    const text = await file.text();
-    const importedFoods = JSON.parse(text);
-    
-    if (!Array.isArray(importedFoods)) {
-      throw new Error("فرمت فایل نامعتبر است");
-    }
-    
-    let successCount = 0;
-    for (const food of importedFoods) {
-      if (food.name && food.category) {
-        await addDoc(foodsRef, {
-          name: food.name,
-          category: food.category,
-          image: food.image || "",
-          favorites: food.favorites || []
-        });
-        successCount++;
-      }
-    }
-    
+if (closeImport) {
+  closeImport.addEventListener("click", () => {
     importModal.style.display = "none";
-    showToast(`📥 ${successCount} خوراک با موفقیت بازیابی شد`, "success");
-  } catch (error) {
-    console.error("Import error:", error);
-    showToast("خطا در بازیابی فایل بکاپ", "error");
-  }
-});
+  });
+}
+
+if (confirmImportBtn) {
+  confirmImportBtn.addEventListener("click", async () => {
+    if (!importFile.files || !importFile.files[0]) {
+      showToast("لطفاً فایل بکاپ را انتخاب کنید", "error");
+      return;
+    }
+    
+    try {
+      const file = importFile.files[0];
+      const text = await file.text();
+      const importedFoods = JSON.parse(text);
+      
+      if (!Array.isArray(importedFoods)) {
+        throw new Error("فرمت فایل نامعتبر است");
+      }
+      
+      let successCount = 0;
+      for (const food of importedFoods) {
+        if (food.name && food.category) {
+          await addDoc(foodsRef, {
+            name: food.name,
+            category: food.category,
+            image: food.image || "",
+            favorites: food.favorites || []
+          });
+          successCount++;
+        }
+      }
+      
+      importModal.style.display = "none";
+      showToast(`📥 ${successCount} خوراک با موفقیت بازیابی شد`, "success");
+    } catch (error) {
+      console.error("Import error:", error);
+      showToast("خطا در بازیابی فایل بکاپ", "error");
+    }
+  });
+}
 
 // ==================== MODAL CLOSE ON OUTSIDE CLICK ====================
 window.addEventListener("click", (e) => {
   if (e.target === modal) modal.style.display = "none";
   if (e.target === favoriteModal) favoriteModal.style.display = "none";
   if (e.target === importModal) importModal.style.display = "none";
-  const editModal = document.getElementById("editModal");
-  if (e.target === editModal) editModal.style.display = "none";
+  const editModalElem = document.getElementById("editModal");
+  if (e.target === editModalElem) editModalElem.style.display = "none";
 });
 
 // ==================== AUTH SYSTEM ====================
@@ -726,22 +800,37 @@ async function logoutUser() {
 }
 
 function updateAccessUI() {
-  document.querySelectorAll(".edit-btn,.delete-btn,.favorite-btn").forEach(el => {
+  // کنترل دکمه‌های موجود در کارت‌ها
+  document.querySelectorAll(".edit-btn, .delete-btn, .favorite-btn").forEach(el => {
     if (!isApprovedUser) {
       el.classList.add("hidden");
+      if (el.classList.contains("favorite-btn")) {
+        el.disabled = true;
+      }
     } else {
       el.classList.remove("hidden");
+      if (el.classList.contains("favorite-btn")) {
+        el.disabled = false;
+      }
     }
   });
 
+  // کنترل فرم افزودن خوراک
   const form = document.getElementById("foodForm");
   if (form) {
     form.style.display = isApprovedUser ? "grid" : "none";
   }
   
+  // کنترل کل بخش افزودن خوراک
   const addSection = document.querySelector(".add-food-section");
   if (addSection) {
-    addSection.style.opacity = isApprovedUser ? "1" : "0.6";
+    if (isApprovedUser) {
+      addSection.style.opacity = "1";
+      addSection.style.pointerEvents = "auto";
+    } else {
+      addSection.style.opacity = "0.6";
+      addSection.style.pointerEvents = "none";
+    }
   }
 }
 
@@ -750,6 +839,10 @@ onAuthStateChanged(auth, (user) => {
 
   if (user) {
     isApprovedUser = allowedEmails.includes(user.email);
+    
+    console.log("User logged in:", user.email);
+    console.log("Is approved user:", isApprovedUser);
+    
     userName.textContent = user.displayName || "عضو خانواده";
     
     if (user.photoURL) {
@@ -766,7 +859,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
       userStatus.innerHTML = "👀 حالت مشاهده";
       userStatus.className = "guest-status";
-      showToast("⛔ دسترسی ویرایش نداری", "error");
+      showToast("⛔ دسترسی ویرایش نداری (فقط ایمیل‌های مجاز)", "error");
     }
   } else {
     isApprovedUser = false;
