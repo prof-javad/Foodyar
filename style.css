@@ -910,3 +910,66 @@ body {
 .guest-message {
   display: none;
 }
+
+/* اضافه کنید به انتهای فایل style.css */
+
+/* ردیف دوتایی برای عکس */
+.image-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.image-upload-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-upload-wrapper input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  display: block;
+  background: linear-gradient(135deg, #e8f0fe, #d4e4fc);
+  color: #1a73e8;
+  padding: 12px 12px;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid #1a73e8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-label:hover {
+  background: #d4e4fc;
+  transform: translateY(-1px);
+}
+
+.image-url-input {
+  flex: 2;
+  min-width: 0;
+}
+
+/* برای موبایل */
+@media (max-width: 640px) {
+  .image-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .image-upload-wrapper,
+  .image-url-input {
+    width: 100%;
+  }
+  
+  .upload-label {
+    padding: 12px 12px;
+    font-size: 0.85rem;
+  }
+}
