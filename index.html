@@ -48,7 +48,7 @@
 <main class="container">
   <section class="hero">
     <h1><span class="hero-emoji">🍔</span> فودیار</h1>
-    <p>غذاهای مورد علاقه‌ات رو ذخیره کن!</p>
+    <p>خوراک های مورد علاقه‌ات رو ذخیره کن!</p>
   </section>
 
   <!-- FILTER BAR - بدون برچسب -->
@@ -73,10 +73,10 @@
 
   <!-- ADD FOOD -->
   <section class="add-food-section">
-    <h2>➕ اضافه کردن غذا</h2>
+    <h2>➕ اضافه کردن خوراک</h2>
     <form id="foodForm">
-      <input type="text" id="foodName" placeholder="اسم غذا..." required />
-      <input type="url" id="foodImage" placeholder="لینک عکس غذا (اختیاری)" />
+      <input type="text" id="foodName" placeholder="اسم خوراک..." required />
+      <input type="url" id="foodImage" placeholder="لینک عکس خوراک (اختیاری)" />
       <select id="foodCategory" required>
         <option value="">انتخاب دسته بندی</option>
         <option value="ایرانی">ایرانی</option>
@@ -86,7 +86,7 @@
         <option value="صبحانه">صبحانه</option>
         <option value="دسر">دسر</option>
       </select>
-      <button type="submit">✨ ذخیره غذا</button>
+      <button type="submit">✨ ذخیره خوراک</button>
     </form>
   </section>
 
@@ -129,7 +129,7 @@
 <div id="favoriteModal" class="favorite-modal">
   <div class="favorite-content">
     <span class="close-favorite">&times;</span>
-    <h3>⭐ چه کسی این غذا را دوست دارد؟</h3>
+    <h3>⭐ چه کسی این خوراک را دوست دارد؟</h3>
     <p class="modal-hint">برای ثبت علاقه‌مندی کلیک کنید (کلیک مجدد برای حذف)</p>
     <div class="members-list" id="membersList"></div>
   </div>
@@ -139,13 +139,13 @@
 <div id="editModal" class="favorite-modal">
   <div class="favorite-content edit-modal-content">
     <span id="closeEdit" class="close-favorite">&times;</span>
-    <h3>✏️ ویرایش غذا</h3>
+    <h3>✏️ ویرایش خوراک</h3>
     <div class="edit-form">
       <div class="image-preview" id="editImagePreview">
         <span>🖼️ پیش‌نمایش عکس</span>
         <img id="previewImg" src="" style="display: none;" />
       </div>
-      <input type="text" id="editName" placeholder="اسم غذا" />
+      <input type="text" id="editName" placeholder="اسم خوراک" />
       <input type="url" id="editImage" placeholder="لینک عکس (اختیاری)" />
       <select id="editCategory">
         <option value="ایرانی">ایرانی</option>
