@@ -45,11 +45,13 @@
 
     </section>
 
-    <!-- FILTER BAR با اسکرول افقی -->
+    <!-- FILTER BAR - دو ردیف جداگانه با اسکرول افقی -->
     <section class="filter-bar">
 
-      <div class="filter-scroll-wrapper">
-        <div class="filter-group">
+      <!-- ردیف اول: دسته بندی غذاها -->
+      <div class="filter-row">
+        <div class="filter-label">دسته بندی</div>
+        <div class="filter-scroll-wrapper">
           <div class="chips categories">
             <button class="chip active category-btn" data-category="همه">همه</button>
             <button class="chip category-btn" data-category="ایرانی">ایرانی</button>
@@ -60,8 +62,12 @@
             <button class="chip category-btn" data-category="دسر">دسر</button>
           </div>
         </div>
+      </div>
 
-        <div class="filter-group">
+      <!-- ردیف دوم: علاقه مندی ها -->
+      <div class="filter-row">
+        <div class="filter-label">علاقه مندی</div>
+        <div class="filter-scroll-wrapper">
           <div class="chips favorite-filter-buttons">
             <button class="chip favorite-filter-btn active" data-name="همه">همه</button>
           </div>
