@@ -1,11 +1,19 @@
 import {
+
   db,
+
   collection,
+
   addDoc,
+
   getDocs,
+
   deleteDoc,
+
   updateDoc,
+
   doc
+
 }
 from "./firebase.js";
 
@@ -60,158 +68,119 @@ const closeFavorite =
 const saveCustomName =
   document.getElementById("saveCustomName");
 
+let foods = [];
+
 let selectedFoodId = null;
 
 let currentCategory = "همه";
 
 let selectedFavoriteFilters = [];
 
-const defaultFoods = [
+const foodsRef =
+  collection(db, "foods");
 
-  {
-    id: 1,
-    name: "قورمه سبزی",
-    category: "ایرانی",
-    image:
-      "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["مامان"],
-  },
+async function loadFoods() {
 
-  {
-    id: 2,
-    name: "قیمه",
-    category: "ایرانی",
-    image:
-      "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["جواد"],
-  },
+  foods = [];
 
-  {
-    id: 3,
-    name: "ماکارونی",
-    category: "خارجی",
-    image:
-      "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["مامان", "الهه"],
-  },
+  const snapshot =
+    await getDocs(foodsRef);
 
-  {
-    id: 4,
-    name: "لازانیا",
-    category: "خارجی",
-    image:
-      "https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["الهه"],
-  },
+  snapshot.forEach((docItem) => {
 
-  {
-    id: 5,
-    name: "کتلت",
-    category: "ایرانی",
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["مامان", "جواد"],
-  },
+    foods.push({
 
-  {
-    id: 6,
-    name: "پنکیک",
-    category: "صبحانه",
-    image:
-      "https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["الهه"],
-  },
+      firebaseId: docItem.id,
 
-  {
-    id: 7,
-    name: "سالاد سزار",
-    category: "رژیمی",
-    image:
-      "https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=1200&auto=format&fit=crop",
-    favorites: ["مامان"],
-  },
+      ...docItem.data()
 
-];
+    });
 
-function getFoods() {
+  });
 
-  const storedFoods =
-    localStorage.getItem("foods");
+  if (foods.length === 0) {
 
-  if (storedFoods) {
+    await addDefaultFoods();
 
-    return JSON.parse(storedFoods);
+    return;
 
   }
 
-  localStorage.setItem(
-    "foods",
-    JSON.stringify(defaultFoods)
-  );
-
-  return defaultFoods;
+  renderFoods();
 
 }
 
-let foods = getFoods();
+async function addDefaultFoods() {
 
-function saveFoods() {
+  const defaultFoods = [
 
-  localStorage.setItem(
-    "foods",
-    JSON.stringify(foods)
-  );
+    {
+      name: "قورمه سبزی",
+      category: "ایرانی",
+      image:
+        "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200&auto=format&fit=crop",
+      favorites: ["مامان"]
+    },
 
-}
+    {
+      name: "قیمه",
+      category: "ایرانی",
+      image:
+        "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
+      favorites: ["جواد"]
+    },
 
-function setColumns(count) {
+    {
+      name: "ماکارونی",
+      category: "خارجی",
+      image:
+        "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=1200&auto=format&fit=crop",
+      favorites: ["الهه", "مامان"]
+    },
 
-  foodsContainer.style.gridTemplateColumns =
-    `repeat(${count}, 1fr)`;
+    {
+      name: "لازانیا",
+      category: "خارجی",
+      image:
+        "https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=1200&auto=format&fit=crop",
+      favorites: ["الهه"]
+    },
 
-  localStorage.setItem(
-    "foodColumns",
-    count
-  );
+    {
+      name: "کتلت",
+      category: "ایرانی",
+      image:
+        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
+      favorites: ["جواد"]
+    },
 
-}
+    {
+      name: "پنکیک",
+      category: "صبحانه",
+      image:
+        "https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=1200&auto=format&fit=crop",
+      favorites: []
+    },
 
-function loadColumns() {
-
-  const savedColumns =
-    localStorage.getItem("foodColumns") || 2;
-
-  setColumns(savedColumns);
-
-  viewButtons.forEach((btn) => {
-
-    btn.classList.remove("active");
-
-    if (
-      btn.dataset.cols == savedColumns
-    ) {
-      btn.classList.add("active");
+    {
+      name: "سالاد سزار",
+      category: "رژیمی",
+      image:
+        "https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=1200&auto=format&fit=crop",
+      favorites: []
     }
 
-  });
+  ];
+
+  for (const food of defaultFoods) {
+
+    await addDoc(foodsRef, food);
+
+  }
+
+  loadFoods();
 
 }
-
-viewButtons.forEach((btn) => {
-
-  btn.addEventListener("click", () => {
-
-    viewButtons.forEach((b) =>
-      b.classList.remove("active")
-    );
-
-    btn.classList.add("active");
-
-    setColumns(btn.dataset.cols);
-
-  });
-
-});
 
 function renderFoods() {
 
@@ -248,9 +217,17 @@ function renderFoods() {
   if (filteredFoods.length === 0) {
 
     foodsContainer.innerHTML = `
-      <div style="padding:40px;text-align:center;">
+
+      <div style="
+        text-align:center;
+        padding:40px;
+        width:100%;
+      ">
+
         😢 غذایی پیدا نشد
+
       </div>
+
     `;
 
     return;
@@ -292,21 +269,21 @@ function renderFoods() {
 
           <button
             class="favorite-btn"
-            onclick="openFavoriteModal(${food.id})"
+            onclick="openFavoriteModal('${food.firebaseId}')"
           >
             ⭐
           </button>
 
           <button
             class="edit-btn"
-            onclick="editFood(${food.id})"
+            onclick="editFood('${food.firebaseId}')"
           >
             ✏️
           </button>
 
           <button
             class="delete-btn"
-            onclick="deleteFood(${food.id})"
+            onclick="deleteFood('${food.firebaseId}')"
           >
             🗑
           </button>
@@ -333,7 +310,7 @@ function renderFoods() {
 
 }
 
-foodForm.addEventListener("submit", (e) => {
+foodForm.addEventListener("submit", async (e) => {
 
   e.preventDefault();
 
@@ -346,9 +323,7 @@ foodForm.addEventListener("submit", (e) => {
   const category =
     document.getElementById("foodCategory").value;
 
-  const newFood = {
-
-    id: Date.now(),
+  await addDoc(foodsRef, {
 
     name,
 
@@ -356,15 +331,9 @@ foodForm.addEventListener("submit", (e) => {
 
     category,
 
-    favorites: [],
+    favorites: []
 
-  };
-
-  foods.unshift(newFood);
-
-  saveFoods();
-
-  renderFoods();
+  });
 
   foodForm.reset();
 
@@ -378,66 +347,159 @@ foodForm.addEventListener("submit", (e) => {
 
   }, 2500);
 
+  loadFoods();
+
 });
 
-function deleteFood(id) {
+async function deleteFood(id) {
 
   const confirmDelete =
     confirm("حذف شود؟");
 
   if (!confirmDelete) return;
 
-  foods =
-    foods.filter(
-      (food) => food.id !== id
-    );
+  await deleteDoc(
+    doc(db, "foods", id)
+  );
 
-  saveFoods();
-
-  renderFoods();
+  loadFoods();
 
 }
 
-function editFood(id) {
+window.editFood =
+  async function(id) {
+
+    const food =
+      foods.find(
+        (f) => f.firebaseId === id
+      );
+
+    if (!food) return;
+
+    const newName =
+      prompt(
+        "اسم جدید غذا:",
+        food.name
+      );
+
+    if (!newName) return;
+
+    const newImage =
+      prompt(
+        "لینک عکس:",
+        food.image
+      );
+
+    if (!newImage) return;
+
+    const newCategory =
+      prompt(
+        "دسته بندی:",
+        food.category
+      );
+
+    if (!newCategory) return;
+
+    await updateDoc(
+
+      doc(db, "foods", id),
+
+      {
+
+        name: newName,
+
+        image: newImage,
+
+        category: newCategory
+
+      }
+
+    );
+
+    loadFoods();
+
+};
+
+window.deleteFood =
+  deleteFood;
+
+window.openFavoriteModal =
+  function(id) {
+
+    selectedFoodId = id;
+
+    favoriteModal.style.display =
+      "flex";
+
+};
+
+document
+  .querySelectorAll(".member-btn")
+  .forEach((btn) => {
+
+    btn.addEventListener("click", () => {
+
+      addFavorite(btn.textContent);
+
+    });
+
+  });
+
+saveCustomName.addEventListener("click", () => {
+
+  const customName =
+    document
+      .getElementById("customName")
+      .value
+      .trim();
+
+  if (!customName) return;
+
+  addFavorite(customName);
+
+  document.getElementById(
+    "customName"
+  ).value = "";
+
+});
+
+async function addFavorite(name) {
 
   const food =
-    foods.find((f) => f.id === id);
+    foods.find(
+      (f) =>
+        f.firebaseId === selectedFoodId
+    );
 
   if (!food) return;
 
-  const newName =
-    prompt(
-      "اسم جدید غذا:",
-      food.name
-    );
+  let favorites =
+    [...food.favorites];
 
-  if (!newName) return;
+  if (
+    !favorites.includes(name)
+  ) {
 
-  const newImage =
-    prompt(
-      "عکس جدید:",
-      food.image
-    );
+    favorites.push(name);
 
-  if (!newImage) return;
+  }
 
-  const newCategory =
-    prompt(
-      "دسته بندی:",
-      food.category
-    );
+  await updateDoc(
 
-  if (!newCategory) return;
+    doc(db, "foods", selectedFoodId),
 
-  food.name = newName;
+    {
 
-  food.image = newImage;
+      favorites
 
-  food.category = newCategory;
+    }
 
-  saveFoods();
+  );
 
-  renderFoods();
+  favoriteModal.style.display =
+    "none";
+
+  loadFoods();
 
 }
 
@@ -524,6 +586,58 @@ favoriteFilterButtons.forEach((button) => {
 
 });
 
+viewButtons.forEach((btn) => {
+
+  btn.addEventListener("click", () => {
+
+    viewButtons.forEach((b) =>
+      b.classList.remove("active")
+    );
+
+    btn.classList.add("active");
+
+    const cols =
+      btn.dataset.cols;
+
+    foodsContainer.style.gridTemplateColumns =
+      `repeat(${cols}, 1fr)`;
+
+    localStorage.setItem(
+      "foodColumns",
+      cols
+    );
+
+  });
+
+});
+
+function loadColumns() {
+
+  const savedColumns =
+    localStorage.getItem(
+      "foodColumns"
+    ) || 2;
+
+  foodsContainer.style.gridTemplateColumns =
+    `repeat(${savedColumns}, 1fr)`;
+
+  viewButtons.forEach((btn) => {
+
+    btn.classList.remove("active");
+
+    if (
+      btn.dataset.cols ==
+      savedColumns
+    ) {
+
+      btn.classList.add("active");
+
+    }
+
+  });
+
+}
+
 randomBtn.addEventListener("click", () => {
 
   let visibleFoods =
@@ -608,6 +722,13 @@ closeModal.addEventListener("click", () => {
 
 });
 
+closeFavorite.addEventListener("click", () => {
+
+  favoriteModal.style.display =
+    "none";
+
+});
+
 window.addEventListener("click", (e) => {
 
   if (e.target === modal) {
@@ -625,78 +746,6 @@ window.addEventListener("click", (e) => {
 
 });
 
-function openFavoriteModal(id) {
-
-  selectedFoodId = id;
-
-  favoriteModal.style.display =
-    "flex";
-
-}
-
-closeFavorite.addEventListener("click", () => {
-
-  favoriteModal.style.display =
-    "none";
-
-});
-
-document
-  .querySelectorAll(".member-btn")
-  .forEach((btn) => {
-
-    btn.addEventListener("click", () => {
-
-      addFavorite(btn.textContent);
-
-    });
-
-  });
-
-saveCustomName.addEventListener("click", () => {
-
-  const customName =
-    document
-      .getElementById("customName")
-      .value
-      .trim();
-
-  if (!customName) return;
-
-  addFavorite(customName);
-
-  document.getElementById(
-    "customName"
-  ).value = "";
-
-});
-
-function addFavorite(name) {
-
-  const food =
-    foods.find(
-      (f) => f.id === selectedFoodId
-    );
-
-  if (!food) return;
-
-  if (
-    !food.favorites.includes(name)
-  ) {
-
-    food.favorites.push(name);
-
-  }
-
-  saveFoods();
-
-  renderFoods();
-
-  favoriteModal.style.display =
-    "none";
-
-}
-
 loadColumns();
 
-renderFoods();
+loadFoods();
