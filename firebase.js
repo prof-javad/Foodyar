@@ -50,9 +50,14 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // تنظیم persistence برای ذخیره لاگین در localStorage
-await setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn("Persistence error:", err);
-});
+(async () => {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    console.log("✅ Persistence set to browserLocalPersistence");
+  } catch (err) {
+    console.warn("Persistence error:", err);
+  }
+})();
 
 // فعال کردن قابلیت آفلاین (ذخیره در IndexedDB)
 enableIndexedDbPersistence(db, {
