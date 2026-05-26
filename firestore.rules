@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // لیست ایمیل‌های مجاز برای ویرایش
+    function isApprovedUser() {
+      return request.auth != null && (
+        request.auth.token.email == "your-email@gmail.com" ||
+        request.auth.token.email == "mom@gmail.com" ||
+        request.auth.token.email == "family@gmail.com" ||
+        request.auth.token.email.endsWith("@example.com")
+      );
+    }
+    
+    // همه می‌توانند بخوانند
+    match /foods/{document} {
+      allow read: if true;
+      
+      // فقط کاربران تأیید شده می‌توانند بنویسند
+      allow create: if isApprovedUser();
+      allow update: if isApprovedUser();
+      allow delete: if isApprovedUser();
+    }
+    
+    // برای هر مجموعه دیگر در آینده
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isApprovedUser();
+    }
+  }
+}
