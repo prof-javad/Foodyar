@@ -64,7 +64,7 @@ let isApprovedUser = false;
 
 // ایمیل‌های مجاز - ایمیل خود را اینجا وارد کنید
 const allowedEmails = [
-  "your-email@gmail.com",  // ایمیل خود را اینجا وارد کنید
+  "jjwad1817@gmail.com",  // ایمیل خود را اینجا وارد کنید
   "mom@gmail.com",
   "family@gmail.com"
 ];
