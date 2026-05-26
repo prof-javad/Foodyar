@@ -1,52 +1,80 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>امروز چی بخوریم؟ 🍽️</title>
+
+  <title>فودیار 🍔</title>
 
   <link rel="stylesheet" href="style.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
 
   <div class="topbar">
-    <div class="logo">
-      🍔 امروز چی میل کنیم؟
-    </div>
 
     <button id="randomBtn" class="random-btn">
-      🎲 امروز چی میل کنیم؟
+      🍔 امروز چی میل کنیم؟
     </button>
+
+    <button id="toggleViewBtn" class="toggle-view-btn">
+      🔳
+    </button>
+
   </div>
 
   <main class="container">
 
     <section class="hero">
-      <h1>🍕 انتخاب غذا برای خانواده سخت شده؟</h1>
-      <p>
-        فقط روی دکمه بزن تا امروز برات یه غذای خوشمزه انتخاب کنیم 😋
-      </p>
+      <h1>فودیار 🍔</h1>
     </section>
 
     <section class="categories">
-      <button class="category-btn active" data-category="همه">همه</button>
-      <button class="category-btn" data-category="ایرانی">ایرانی</button>
-      <button class="category-btn" data-category="خارجی">خارجی</button>
-      <button class="category-btn" data-category="فست‌فود">فست‌فود</button>
-      <button class="category-btn" data-category="رژیمی">رژیمی</button>
-      <button class="category-btn" data-category="صبحانه">صبحانه</button>
-      <button class="category-btn" data-category="دسر">دسر</button>
+
+      <button class="category-btn active" data-category="همه">
+        همه
+      </button>
+
+      <button class="category-btn" data-category="ایرانی">
+        ایرانی
+      </button>
+
+      <button class="category-btn" data-category="خارجی">
+        خارجی
+      </button>
+
+      <button class="category-btn" data-category="فست‌فود">
+        فست‌فود
+      </button>
+
+      <button class="category-btn" data-category="رژیمی">
+        رژیمی
+      </button>
+
+      <button class="category-btn" data-category="صبحانه">
+        صبحانه
+      </button>
+
+      <button class="category-btn" data-category="دسر">
+        دسر
+      </button>
+
     </section>
 
     <section class="add-food-section">
+
       <h2>➕ اضافه کردن غذا</h2>
 
       <form id="foodForm">
+
         <input
           type="text"
           id="foodName"
@@ -62,23 +90,47 @@
         />
 
         <select id="foodCategory" required>
-          <option value="">انتخاب دسته بندی</option>
-          <option value="ایرانی">ایرانی</option>
-          <option value="خارجی">خارجی</option>
-          <option value="فست‌فود">فست‌فود</option>
-          <option value="رژیمی">رژیمی</option>
-          <option value="صبحانه">صبحانه</option>
-          <option value="دسر">دسر</option>
+
+          <option value="">
+            انتخاب دسته بندی
+          </option>
+
+          <option value="ایرانی">
+            ایرانی
+          </option>
+
+          <option value="خارجی">
+            خارجی
+          </option>
+
+          <option value="فست‌فود">
+            فست‌فود
+          </option>
+
+          <option value="رژیمی">
+            رژیمی
+          </option>
+
+          <option value="صبحانه">
+            صبحانه
+          </option>
+
+          <option value="دسر">
+            دسر
+          </option>
+
         </select>
 
         <button type="submit">
           ✨ ذخیره غذا
         </button>
+
       </form>
 
       <div id="successMessage" class="success-message">
         ✅ غذا با موفقیت اضافه شد!
       </div>
+
     </section>
 
     <section class="foods-section">
@@ -87,47 +139,89 @@
 
   </main>
 
-  <!-- Random Modal -->
+  <!-- RANDOM MODAL -->
+
   <div id="randomModal" class="modal">
+
     <div class="modal-content">
-      <span class="close-modal">&times;</span>
+
+      <span class="close-modal">
+        &times;
+      </span>
 
       <div id="loadingSpinner" class="spinner-container">
+
         <div class="spinner"></div>
-        <p>داریم انتخاب می‌کنیم... 🍟</p>
+
+        <p>
+          داریم انتخاب می‌کنیم... 🍟
+        </p>
+
       </div>
 
       <div id="randomFoodResult" class="random-result hidden">
+
         <img id="randomFoodImage" src="" alt="">
+
         <h2 id="randomFoodName"></h2>
+
         <p id="randomFoodCategory"></p>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- Favorite Modal -->
+  <!-- FAVORITE MODAL -->
+
   <div id="favoriteModal" class="favorite-modal">
+
     <div class="favorite-content">
 
-      <span class="close-favorite">&times;</span>
+      <span class="close-favorite">
+        &times;
+      </span>
 
-      <h3>⭐ چه کسی این غذا را دوست دارد؟</h3>
+      <h3>
+        ⭐ چه کسی این غذا را دوست دارد؟
+      </h3>
 
       <div class="members-list">
-        <button class="member-btn">مامان</button>
-        <button class="member-btn">بابا</button>
-        <button class="member-btn">علی</button>
-        <button class="member-btn">زهرا</button>
+
+        <button class="member-btn">
+          مامان
+        </button>
+
+        <button class="member-btn">
+          الهه
+        </button>
+
+        <button class="member-btn">
+          جواد
+        </button>
+
       </div>
 
       <div class="custom-member">
-        <input type="text" id="customName" placeholder="اسم جدید..." />
-        <button id="saveCustomName">ثبت</button>
+
+        <input
+          type="text"
+          id="customName"
+          placeholder="اسم جدید..."
+        />
+
+        <button id="saveCustomName">
+          ثبت
+        </button>
+
       </div>
 
     </div>
+
   </div>
 
   <script src="script.js"></script>
+
 </body>
 </html>
