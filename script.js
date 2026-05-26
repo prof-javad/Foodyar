@@ -243,7 +243,7 @@ async function handleLogout() {
   }
 }
 
-// ==================== AUTH STATE LISTENER (مهمترین بخش) ====================
+// ==================== AUTH STATE LISTENER ====================
 onAuthStateChanged(auth, (user) => {
   console.log("🔥 onAuthStateChanged triggered:", user ? user.email : "No user");
   currentUser = user;
