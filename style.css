@@ -639,3 +639,48 @@ body {
     font-size: 1.6rem;
   }
 }
+
+/* Auth Loading Overlay */
+.auth-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.auth-loading-content {
+  background: white;
+  padding: 30px;
+  border-radius: 30px;
+  text-align: center;
+  animation: modalSlideIn 0.3s ease;
+}
+
+.auth-loading-content .spinner {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 16px;
+}
+
+.auth-loading-content p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
