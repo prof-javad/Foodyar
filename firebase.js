@@ -5,18 +5,22 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 
-  getAuth,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged,
-  browserLocalPersistence,
-  setPersistence
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc,
+  onSnapshot,
+  enableIndexedDbPersistence,
+  enableNetwork,
+  disableNetwork,
+  CACHE_SIZE_UNLIMITED
 
 }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import {
 
   getAuth,
@@ -45,7 +49,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-// تنظیم persistence - به صورت غیر مسدودکننده
+// تنظیم persistence برای ذخیره لاگین
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
     console.log("✅ Persistence set to browserLocalPersistence");
