@@ -28,8 +28,20 @@
       🎲 امروز چی میل کنیم؟
     </button>
     <div class="topbar-actions">
-      <button id="exportBtn" class="icon-btn" title="بکاپ گرفتن">💾</button>
-      <button id="importBtn" class="icon-btn" title="بازیابی بکاپ">📥</button>
+      <!-- دکمه لاگین/پروفایل -->
+      <div id="authSection" class="auth-section">
+        <button id="loginBtn" class="login-btn">🔐 ورود خانواده</button>
+        <div id="userProfile" class="user-profile" style="display: none;">
+          <img id="userAvatar" class="user-avatar" src="" alt="avatar">
+          <div class="user-info">
+            <span id="userName" class="user-name"></span>
+            <span class="user-badge">👨‍👩‍👧‍👦 عضو خانواده</span>
+          </div>
+          <button id="logoutBtn" class="logout-btn" title="خروج">🚪</button>
+        </div>
+      </div>
+      <button id="exportBtn" class="icon-btn admin-only" title="بکاپ گرفتن" style="display: none;">💾</button>
+      <button id="importBtn" class="icon-btn admin-only" title="بازیابی بکاپ" style="display: none;">📥</button>
     </div>
   </div>
 
@@ -37,6 +49,11 @@
   <div id="statusChip" class="status-chip online">
     <span class="status-dot"></span>
     <span class="status-text">آنلاین</span>
+  </div>
+
+  <!-- پیام دسترسی محدود (برای مشاهده‌کنندگان) -->
+  <div id="viewerMessage" class="viewer-message" style="display: none;">
+    👀 فقط اعضای خانواده امکان ویرایش دارند
   </div>
 
   <main class="container">
@@ -77,8 +94,8 @@
       </div>
     </section>
 
-    <!-- ADD FOOD -->
-    <section class="add-food-section">
+    <!-- ADD FOOD (فقط برای ادمین‌ها) -->
+    <section id="addFoodSection" class="add-food-section admin-only" style="display: none;">
       <h2>➕ اضافه کردن غذا</h2>
       <form id="foodForm">
         <input type="text" id="foodName" placeholder="اسم غذا..." required />
@@ -99,16 +116,38 @@
     <section class="foods-section">
       <!-- اسکلتون لودینگ -->
       <div id="skeletonContainer" class="foods-grid skeleton-grid">
-        ${[...Array(4)].map(() => `
-          <div class="skeleton-card">
-            <div class="skeleton-image"></div>
-            <div class="skeleton-content">
-              <div class="skeleton-title"></div>
-              <div class="skeleton-category"></div>
-              <div class="skeleton-actions"></div>
-            </div>
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-category"></div>
+            <div class="skeleton-actions"></div>
           </div>
-        `).join('')}
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-category"></div>
+            <div class="skeleton-actions"></div>
+          </div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-category"></div>
+            <div class="skeleton-actions"></div>
+          </div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-category"></div>
+            <div class="skeleton-actions"></div>
+          </div>
+        </div>
       </div>
       <div id="foodsContainer" class="foods-grid"></div>
     </section>
