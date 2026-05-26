@@ -273,11 +273,16 @@ function uploadImageToTempUrl(file) {
   });
 }
 
-// برای فرم اضافه کردن خوراک
+// فقط بخش‌های مربوط به فایل‌های عکس را اصلاح کنید
+
+// برای فرم اضافه کردن خوراک (حذف capture از فیلد)
 const foodImageFile = document.getElementById("foodImageFile");
 const foodImageUrl = document.getElementById("foodImage");
 
 if (foodImageFile) {
+  // حذف attribute capture اگر وجود دارد
+  foodImageFile.removeAttribute("capture");
+  
   foodImageFile.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -293,11 +298,14 @@ if (foodImageFile) {
   });
 }
 
-// برای فرم ویرایش خوراک
+// برای فرم ویرایش خوراک (حذف capture از فیلد)
 const editImageFile = document.getElementById("editImageFile");
 const editImageUrl = document.getElementById("editImage");
 
 if (editImageFile) {
+  // حذف attribute capture اگر وجود دارد
+  editImageFile.removeAttribute("capture");
+  
   editImageFile.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (file) {
