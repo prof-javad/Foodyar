@@ -93,6 +93,10 @@ body {
   50% { opacity: 0.5; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Container */
 .container {
   width: min(1200px, 92%);
@@ -232,6 +236,35 @@ body {
 
 #foodForm button:hover {
   transform: scale(1.01);
+}
+
+/* Image Upload Group */
+.image-upload-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-upload-group input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  background: linear-gradient(135deg, #e8f0fe, #d4e4fc);
+  color: #1a73e8;
+  padding: 10px 16px;
+  border-radius: 30px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px dashed #1a73e8;
+}
+
+.upload-label:hover {
+  background: #d4e4fc;
+  transform: translateY(-1px);
 }
 
 /* Foods Grid */
@@ -415,7 +448,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Footer Actions - NEW */
+/* Footer Actions */
 .footer-actions {
   display: flex;
   justify-content: space-between;
@@ -645,12 +678,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .random-result img {
   width: 100%;
   height: 190px;
@@ -663,7 +690,7 @@ body {
   display: none;
 }
 
-/* Toast Notifications - فقط یک نوتیفیکیشن همزمان */
+/* Toast Notifications */
 .toast-container {
   position: fixed;
   bottom: 80px;
@@ -718,7 +745,7 @@ body {
   border-right: 4px solid #ff9800;
 }
 
-/* AUTH SYSTEM - پنل کاربری یک ردیفه */
+/* AUTH SYSTEM */
 .user-panel {
   display: flex;
   align-items: center;
@@ -803,10 +830,6 @@ body {
   transform: translateY(-1px);
 }
 
-.hidden {
-  display: none !important;
-}
-
 /* Responsive */
 @media (max-width: 640px) {
   .food-image, .food-image-placeholder {
@@ -873,62 +896,17 @@ body {
     width: 38px;
     height: 38px;
   }
-}
-/* اضافه کن به انتهای فایل style.css */
-.add-food-section.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.favorite-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  
+  .upload-label {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
 }
 
-
-/* به انتهای فایل style.css اضافه کنید */
-
-/* Footer Actions */
-.footer-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.footer-buttons-group {
-  display: flex;
-  gap: 12px;
-}
-
-.footer-icon-btn {
-  border: none;
-  background: linear-gradient(135deg, #f5f5f5, #fff);
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-size: 0.85rem;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.footer-icon-btn:hover {
-  transform: translateY(-2px);
-  background: #fff0da;
-}
-
-/* حذف استایل‌های قدیمی topbar-actions چون به فوتر منتقل شدند */
 .topbar-actions {
   display: none;
 }
 
-/* مخفی کردن پیام مهمان (حذف شده) */
 .guest-message {
   display: none;
 }
