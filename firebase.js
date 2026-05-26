@@ -21,6 +21,17 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyCYM1hZ94IPgGxIbkzrUB3Lgz9WKJ08a9Y",
   authDomain: "foodyar-bb4ad.firebaseapp.com",
@@ -32,6 +43,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 // فعال کردن قابلیت آفلاین (ذخیره در IndexedDB)
 enableIndexedDbPersistence(db, {
@@ -54,5 +67,10 @@ export {
   doc,
   onSnapshot,
   enableNetwork,
-  disableNetwork
+  disableNetwork,
+  auth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
 };
