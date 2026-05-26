@@ -7,7 +7,8 @@ import {
   doc,
   onSnapshot,
   auth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -57,9 +58,9 @@ let isApproved = false;
 
 // لیست ایمیل‌های مجاز برای ویرایش
 const ALLOWED_EMAILS = [
-  "jjwad1817@gmail.com",    // ایمیل خودت رو اینجا بذار
-  "eli985143@gmail.com",           // ایمیل مامان
-  "ashraf.ir.090@gmail.com"         // ایمیل اعضای خانواده
+  "jjwad1817@gmail.com",
+  "eli985143@gmail.com",
+  "ashraf.ir.090@gmail.com"
 ];
 
 const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
@@ -114,29 +115,23 @@ window.addEventListener("offline", () => {
 // ==================== AUTH UI UPDATE ====================
 function updateAuthUI() {
   if (!currentUser) {
-    // کاربر لاگین نیست
     loginBtn.style.display = "flex";
     userProfile.style.display = "none";
     viewerMessage.style.display = "flex";
     isApproved = false;
     
-    // مخفی کردن دکمه‌های ادمین
     document.querySelectorAll(".admin-only").forEach(el => {
       el.style.display = "none";
     });
     
-    // رندر مجدد غذاها بدون دکمه‌های ویرایش
     renderFoods();
   } else {
-    // کاربر لاگین است
     loginBtn.style.display = "none";
     userProfile.style.display = "flex";
     
-    // تنظیم اطلاعات کاربر
     userAvatar.src = currentUser.photoURL || "https://via.placeholder.com/36";
     userName.textContent = currentUser.displayName || currentUser.email?.split('@')[0] || "کاربر";
     
-    // بررسی دسترسی
     const userEmail = currentUser.email;
     isApproved = ALLOWED_EMAILS.includes(userEmail);
     
@@ -157,7 +152,6 @@ function updateAuthUI() {
       showToast("⛔ دسترسی ویرایش ندارید", "warning");
     }
     
-    // رندر مجدد غذاها
     renderFoods();
   }
 }
@@ -173,7 +167,7 @@ function showAuthLoading(show) {
       loadingOverlay.innerHTML = `
         <div class="auth-loading-content">
           <div class="spinner"></div>
-          <p>در حال ورود به حساب کاربری...</p>
+          <p>در حال انتقال به صفحه ورود...</p>
         </div>
       `;
       document.body.appendChild(loadingOverlay);
@@ -186,24 +180,34 @@ function showAuthLoading(show) {
   }
 }
 
-// ==================== GOOGLE LOGIN ====================
+// ==================== GOOGLE LOGIN (با Redirect) ====================
 async function handleGoogleLogin() {
   try {
     showAuthLoading(true);
-    // استفاده از signInWithRedirect به جای signInWithPopup
     await signInWithRedirect(auth, new GoogleAuthProvider());
-    // صفحه دوباره بارگذاری می‌شود و getRedirectResult اجرا می‌شود
   } catch (error) {
     console.error("Login error:", error);
     showAuthLoading(false);
-    let errorMessage = "خطا در ورود";
-    if (error.code === "auth/popup-blocked") {
-      errorMessage = "پاپ‌آپ مسدود شده. لطفاً اجازه دهید.";
-    } else {
-      errorMessage = "خطا: " + error.message;
-    }
-    showToast(errorMessage, "error");
+    showToast("خطا در ورود: " + error.message, "error");
   }
+}
+
+// ==================== HANDLE REDIRECT RESULT ====================
+function handleRedirectResult() {
+  getRedirectResult(auth)
+    .then((result) => {
+      showAuthLoading(false);
+      if (result && result.user) {
+        console.log("Login success:", result.user.email);
+      }
+    })
+    .catch((error) => {
+      showAuthLoading(false);
+      console.error("Redirect result error:", error);
+      if (error.code !== "auth/no-auth-event") {
+        showToast("خطا در ورود: " + error.message, "error");
+      }
+    });
 }
 
 // ==================== LOGOUT ====================
@@ -226,7 +230,9 @@ onAuthStateChanged(auth, (user) => {
   updateAuthUI();
 });
 
-// Event listeners برای دکمه‌های احراز هویت
+// ==================== INIT AUTH ====================
+handleRedirectResult();
+
 loginBtn?.addEventListener("click", handleGoogleLogin);
 logoutBtn?.addEventListener("click", handleLogout);
 
@@ -234,8 +240,8 @@ logoutBtn?.addEventListener("click", handleLogout);
 function startRealtimeSync() {
   if (unsubscribe) unsubscribe();
   
-  skeletonContainer.style.display = "grid";
-  foodsContainer.style.display = "none";
+  if (skeletonContainer) skeletonContainer.style.display = "grid";
+  if (foodsContainer) foodsContainer.style.display = "none";
   
   unsubscribe = onSnapshot(foodsRef, 
     (snapshot) => {
@@ -250,20 +256,16 @@ function startRealtimeSync() {
         });
       });
       
-      skeletonContainer.style.display = "none";
-      foodsContainer.style.display = "grid";
+      if (skeletonContainer) skeletonContainer.style.display = "none";
+      if (foodsContainer) foodsContainer.style.display = "grid";
       
       updateFavoriteFilterButtons();
       renderFoods();
-      if (!isSyncing) {
-        // فقط وقتی اولین بار نیست تویست نشون بده
-        if (foods.length > 0) showToast("همگام‌سازی شد", "success");
-      }
     },
     (error) => {
       console.error("Firestore error:", error);
-      skeletonContainer.style.display = "none";
-      foodsContainer.style.display = "grid";
+      if (skeletonContainer) skeletonContainer.style.display = "none";
+      if (foodsContainer) foodsContainer.style.display = "grid";
       showToast("خطا در همگام‌سازی", "error");
     }
   );
@@ -346,8 +348,9 @@ function getFilteredFoods() {
   return filteredFoods;
 }
 
-// ==================== RENDER FOODS (با در نظر گرفتن دسترسی) ====================
+// ==================== RENDER FOODS ====================
 function renderFoods() {
+  if (!foodsContainer) return;
   foodsContainer.innerHTML = "";
   const filteredFoods = getFilteredFoods();
 
@@ -360,7 +363,6 @@ function renderFoods() {
     const card = document.createElement("div");
     card.className = "food-card";
 
-    // نمایش دکمه‌های ویرایش فقط برای کاربران تأیید شده
     const showEditButtons = isApproved;
     
     const actionButtons = showEditButtons ? `
@@ -369,11 +371,7 @@ function renderFoods() {
         <button class="edit-btn" onclick="window.openEditModal('${food.firebaseId}')">✏️ ویرایش</button>
         <button class="delete-btn" onclick="window.deleteFood('${food.firebaseId}')">🗑 حذف</button>
       </div>
-    ` : `
-      <div class="card-actions viewer-actions">
-        <button class="favorite-view-btn" disabled style="opacity:0.6; cursor:default;">⭐ مشاهده علاقه‌مندان</button>
-      </div>
-    `;
+    ` : ``;
 
     card.innerHTML = `
       ${food.image ? 
@@ -408,7 +406,7 @@ function escapeHtml(str) {
   });
 }
 
-// ==================== ADD FOOD (فقط برای ادمین‌ها) ====================
+// ==================== ADD FOOD ====================
 foodForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   
@@ -447,7 +445,7 @@ foodForm?.addEventListener("submit", async (e) => {
   }
 });
 
-// ==================== DELETE FOOD (فقط برای ادمین‌ها) ====================
+// ==================== DELETE FOOD ====================
 window.deleteFood = async function(id) {
   if (!isApproved) {
     showToast("⛔ شما دسترسی ویرایش ندارید", "error");
@@ -464,7 +462,7 @@ window.deleteFood = async function(id) {
   }
 };
 
-// ==================== EDIT MODAL (فقط برای ادمین‌ها) ====================
+// ==================== EDIT MODAL ====================
 window.openEditModal = function(id) {
   if (!isApproved) {
     showToast("⛔ شما دسترسی ویرایش ندارید", "error");
@@ -539,7 +537,7 @@ document.getElementById("closeEdit")?.addEventListener("click", () => {
   document.getElementById("editModal").style.display = "none";
 });
 
-// ==================== FAVORITE MODAL (فقط برای ادمین‌ها) ====================
+// ==================== FAVORITE MODAL ====================
 window.openFavoriteModal = function(id) {
   if (!isApproved) {
     showToast("⛔ فقط اعضای خانواده می‌توانند علاقه‌مندی ثبت کنند", "error");
@@ -609,7 +607,7 @@ document.querySelectorAll(".category-btn").forEach((button) => {
 // ==================== VIEW COLUMNS ====================
 function loadColumns() {
   const cols = localStorage.getItem("foodColumns") || "2";
-  foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  if (foodsContainer) foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   if (skeletonContainer) skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   
   viewColBtns.forEach(btn => {
@@ -624,7 +622,7 @@ function loadColumns() {
 viewColBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     const cols = btn.dataset.cols;
-    foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    if (foodsContainer) foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     if (skeletonContainer) skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     localStorage.setItem("foodColumns", cols);
     
@@ -663,7 +661,7 @@ closeModal.addEventListener("click", () => {
   modal.style.display = "none";
 });
 
-// ==================== EXPORT BACKUP (فقط برای ادمین‌ها) ====================
+// ==================== EXPORT BACKUP ====================
 exportBtn?.addEventListener("click", () => {
   if (!isApproved) {
     showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بگیرند", "error");
@@ -692,7 +690,7 @@ exportBtn?.addEventListener("click", () => {
   showToast(`💾 بکاپ گرفته شد (${exportData.length} غذا)`, "success");
 });
 
-// ==================== IMPORT BACKUP (فقط برای ادمین‌ها) ====================
+// ==================== IMPORT BACKUP ====================
 importBtn?.addEventListener("click", () => {
   if (!isApproved) {
     showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بازیابی کنند", "error");
