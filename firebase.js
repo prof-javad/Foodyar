@@ -25,30 +25,30 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
 
   apiKey:
-    "AIzaSyCYM1hZ94IPgGxIbkzrUB3Lgz9WKJ08a9Y",
+  "AIzaSyCYM1hZ94IPgGxIbkzrUB3Lgz9WKJ08a9Y",
 
   authDomain:
-    "foodyar-bb4ad.firebaseapp.com",
+  "foodyar-bb4ad.firebaseapp.com",
 
   projectId:
-    "foodyar-bb4ad",
+  "foodyar-bb4ad",
 
   storageBucket:
-    "foodyar-bb4ad.firebasestorage.app",
+  "foodyar-bb4ad.firebasestorage.app",
 
   messagingSenderId:
-    "802950674478",
+  "802950674478",
 
   appId:
-    "1:802950674478:web:63a336fc78ce53357d87bf"
+  "1:802950674478:web:63a336fc78ce53357d87bf"
 
 };
 
 const app =
-  initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 
 const db =
-  getFirestore(app);
+getFirestore(app);
 
 export {
 
