@@ -78,13 +78,13 @@ function convertImageToBase64(file) {
   });
 }
 
-// ==================== آپلود عکس (عمومی) ====================
+// ==================== آپلود عکس (عمومی) - بدون capture مستقیم ====================
 async function uploadImage(inputElement, buttonElement) {
-  // ایجاد input فایل با پشتیبانی از دوربین در موبایل
+  // ایجاد input فایل - بدون capture تا گزینه گالری/دوربین رو بپرسه
   const fileInput = document.createElement("input");
   fileInput.type = "file";
   fileInput.accept = "image/*";
-  fileInput.capture = "environment"; // 'user' برای دوربین سلفی، 'environment' برای دوربین پشت
+  // حذف خط capture تا در موبایل انتخابگر نمایش داده بشه
   
   fileInput.onchange = async (e) => {
     const file = e.target.files[0];
