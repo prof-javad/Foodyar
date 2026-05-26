@@ -71,35 +71,32 @@
     </div>
   </section>
 
-  <!-- ADD FOOD -->
-  <section class="add-food-section">
-    <h2>➕ اضافه کردن خوراک</h2>
-    <form id="foodForm">
-      <input type="text" id="foodName" placeholder="اسم خوراک..." required />
-      
-      <div class="image-upload-group">
-        <input type="file" id="foodImageFile" accept="image/*" capture="environment" />
-        <label for="foodImageFile" class="upload-label">📸 انتخاب عکس از گالری یا دوربین</label>
-        <input type="url" id="foodImage" placeholder="یا لینک عکس خوراک (اختیاری)" />
+  <!-- ADD FOOD - بخش عکس با دو فیلد در یک ردیف -->
+<section class="add-food-section">
+  <h2>➕ اضافه کردن خوراک</h2>
+  <form id="foodForm">
+    <input type="text" id="foodName" placeholder="اسم خوراک..." required />
+    
+    <div class="image-row">
+      <div class="image-upload-wrapper">
+        <input type="file" id="foodImageFile" accept="image/*" />
+        <label for="foodImageFile" class="upload-label">📸 انتخاب عکس</label>
       </div>
-      
-      <select id="foodCategory" required>
-        <option value="">انتخاب دسته بندی</option>
-        <option value="ایرانی">ایرانی</option>
-        <option value="خارجی">خارجی</option>
-        <option value="فست‌فود">فست‌فود</option>
-        <option value="رژیمی">رژیمی</option>
-        <option value="صبحانه">صبحانه</option>
-        <option value="دسر">دسر</option>
-      </select>
-      <button type="submit">✨ ذخیره خوراک</button>
-    </form>
-  </section>
-
-  <section class="foods-section">
-    <div id="skeletonContainer" class="foods-grid skeleton-grid"></div>
-    <div id="foodsContainer" class="foods-grid"></div>
-  </section>
+      <input type="url" id="foodImage" placeholder="لینک عکس (اختیاری)" class="image-url-input" />
+    </div>
+    
+    <select id="foodCategory" required>
+      <option value="">انتخاب دسته بندی</option>
+      <option value="ایرانی">ایرانی</option>
+      <option value="خارجی">خارجی</option>
+      <option value="فست‌فود">فست‌فود</option>
+      <option value="رژیمی">رژیمی</option>
+      <option value="صبحانه">صبحانه</option>
+      <option value="دسر">دسر</option>
+    </select>
+    <button type="submit">✨ ذخیره خوراک</button>
+  </form>
+</section>
 
   <!-- FOOTER با دکمه‌های Import/Export و کنترل ستون‌ها -->
   <div class="footer-actions">
