@@ -190,10 +190,15 @@ function showAuthLoading(show) {
 
 // ==================== GOOGLE LOGIN (با Redirect) ====================
 async function handleGoogleLogin() {
+  console.log("🔐 Login button clicked!");
   try {
     showAuthLoading(true);
     console.log("Starting Google Sign-In with redirect...");
-    await signInWithRedirect(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    await signInWithRedirect(auth, provider);
   } catch (error) {
     console.error("Login error:", error);
     showAuthLoading(false);
@@ -203,7 +208,7 @@ async function handleGoogleLogin() {
 
 // ==================== HANDLE REDIRECT RESULT ====================
 function handleRedirectResult() {
-  console.log("Checking redirect result...");
+  console.log("🔍 Checking redirect result...");
   getRedirectResult(auth)
     .then((result) => {
       showAuthLoading(false);
