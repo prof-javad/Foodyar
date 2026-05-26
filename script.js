@@ -14,36 +14,24 @@ import {
   onAuthStateChanged
 } from "./firebase.js";
 
-// DOM Elements
-const foodsContainer = document.getElementById("foodsContainer");
-const skeletonContainer = document.getElementById("skeletonContainer");
-const foodForm = document.getElementById("foodForm");
-const categoryButtons = document.querySelectorAll(".category-btn");
-const randomBtn = document.getElementById("randomBtn");
-const modal = document.getElementById("randomModal");
-const closeModal = document.querySelector(".close-modal");
-const loadingSpinner = document.getElementById("loadingSpinner");
-const randomFoodResult = document.getElementById("randomFoodResult");
-const randomFoodImage = document.getElementById("randomFoodImage");
-const randomFoodName = document.getElementById("randomFoodName");
-const randomFoodCategory = document.getElementById("randomFoodCategory");
-const favoriteModal = document.getElementById("favoriteModal");
-const closeFavorite = document.querySelector(".close-favorite");
-const exportBtn = document.getElementById("exportBtn");
-const importBtn = document.getElementById("importBtn");
-const importModal = document.getElementById("importModal");
-const closeImport = document.getElementById("closeImport");
-const importFile = document.getElementById("importFile");
-const confirmImportBtn = document.getElementById("confirmImportBtn");
-const statusChip = document.getElementById("statusChip");
-const viewColBtns = document.querySelectorAll(".view-col-btn");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const userProfile = document.getElementById("userProfile");
-const userAvatar = document.getElementById("userAvatar");
-const userName = document.getElementById("userName");
-const viewerMessage = document.getElementById("viewerMessage");
-const addFoodSection = document.getElementById("addFoodSection");
+// ==================== صبر برای لود شدن کامل DOM ====================
+function waitForDOM() {
+  return new Promise((resolve) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve);
+    } else {
+      resolve();
+    }
+  });
+}
+
+// ==================== متغیرهای سراسری ====================
+let foodsContainer, skeletonContainer, foodForm, categoryButtons, randomBtn;
+let modal, closeModal, loadingSpinner, randomFoodResult, randomFoodImage;
+let randomFoodName, randomFoodCategory, favoriteModal, closeFavorite;
+let exportBtn, importBtn, importModal, closeImport, importFile, confirmImportBtn;
+let statusChip, viewColBtns, loginBtn, logoutBtn, userProfile, userAvatar;
+let userName, viewerMessage, addFoodSection;
 
 const foodsRef = collection(db, "foods");
 let foods = [];
@@ -68,6 +56,7 @@ const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
 // ==================== TOAST NOTIFICATION ====================
 function showToast(message, type = "info") {
   const container = document.getElementById("toastContainer");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   
@@ -89,6 +78,7 @@ function showToast(message, type = "info") {
 
 // ==================== STATUS INDICATOR ====================
 function updateStatusUI() {
+  if (!statusChip) return;
   if (!isOnline) {
     statusChip.className = "status-chip offline";
     statusChip.innerHTML = '<span class="status-dot"></span><span class="status-text">آفلاین</span>';
@@ -110,35 +100,34 @@ window.addEventListener("online", () => {
 window.addEventListener("offline", () => {
   isOnline = false;
   updateStatusUI();
-  showToast("اینترنت قطع شد! تغییرات بعداً همگام‌سازی می‌شوند", "error");
+  showToast("اینترنت قطع شد!", "error");
 });
 
 // ==================== AUTH UI UPDATE ====================
 function updateAuthUI() {
   console.log("updateAuthUI called, currentUser:", currentUser ? currentUser.email : "null");
   
+  if (!loginBtn || !userProfile) return;
+  
   if (!currentUser) {
-    // کاربر لاگین نیست
     loginBtn.style.display = "flex";
     userProfile.style.display = "none";
-    viewerMessage.style.display = "flex";
+    if (viewerMessage) viewerMessage.style.display = "flex";
     isApproved = false;
     
     document.querySelectorAll(".admin-only").forEach(el => {
       el.style.display = "none";
     });
     
+    if (addFoodSection) addFoodSection.style.display = "none";
     renderFoods();
   } else {
-    // کاربر لاگین است
     loginBtn.style.display = "none";
     userProfile.style.display = "flex";
     
-    // تنظیم اطلاعات کاربر
-    userAvatar.src = currentUser.photoURL || "https://via.placeholder.com/36";
-    userName.textContent = currentUser.displayName || currentUser.email?.split('@')[0] || "کاربر";
+    if (userAvatar) userAvatar.src = currentUser.photoURL || "https://via.placeholder.com/36";
+    if (userName) userName.textContent = currentUser.displayName || currentUser.email?.split('@')[0] || "کاربر";
     
-    // بررسی دسترسی
     const userEmail = currentUser.email;
     isApproved = ALLOWED_EMAILS.includes(userEmail);
     
@@ -146,18 +135,22 @@ function updateAuthUI() {
     console.log("Is approved:", isApproved);
     
     if (isApproved) {
-      viewerMessage.style.display = "none";
+      if (viewerMessage) viewerMessage.style.display = "none";
       document.querySelectorAll(".admin-only").forEach(el => {
         el.style.display = "block";
       });
       if (addFoodSection) addFoodSection.style.display = "block";
+      showToast(`✅ خوش آمدی ${currentUser.displayName || "عضو خانواده"}`, "success");
     } else {
-      viewerMessage.style.display = "flex";
-      viewerMessage.innerHTML = "⛔ شما دسترسی ویرایش ندارید. فقط اعضای خانواده می‌توانند غذا اضافه کنند.";
+      if (viewerMessage) {
+        viewerMessage.style.display = "flex";
+        viewerMessage.innerHTML = "⛔ شما دسترسی ویرایش ندارید. فقط اعضای خانواده می‌توانند غذا اضافه کنند.";
+      }
       document.querySelectorAll(".admin-only").forEach(el => {
         el.style.display = "none";
       });
       if (addFoodSection) addFoodSection.style.display = "none";
+      showToast("⛔ دسترسی ویرایش ندارید", "warning");
     }
     
     renderFoods();
@@ -188,16 +181,13 @@ function showAuthLoading(show) {
   }
 }
 
-// ==================== GOOGLE LOGIN (با Redirect) ====================
+// ==================== GOOGLE LOGIN ====================
 async function handleGoogleLogin() {
   console.log("🔐 Login button clicked!");
   try {
     showAuthLoading(true);
-    console.log("Starting Google Sign-In with redirect...");
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
+    provider.setCustomParameters({ prompt: 'select_account' });
     await signInWithRedirect(auth, provider);
   } catch (error) {
     console.error("Login error:", error);
@@ -214,7 +204,6 @@ function handleRedirectResult() {
       showAuthLoading(false);
       if (result && result.user) {
         console.log("✅ Redirect login success:", result.user.email);
-        showToast(`🔐 خوش آمدی ${result.user.displayName || result.user.email}`, "success");
       } else {
         console.log("No redirect result");
       }
@@ -245,25 +234,44 @@ async function handleLogout() {
 
 // ==================== AUTH STATE LISTENER ====================
 onAuthStateChanged(auth, (user) => {
-  console.log("🔥 onAuthStateChanged triggered:", user ? user.email : "No user");
+  console.log("🔥 onAuthStateChanged:", user ? user.email : "No user");
   currentUser = user;
   updateAuthUI();
-  
-  if (user && ALLOWED_EMAILS.includes(user.email) && !isApproved) {
-    showToast(`✅ خوش آمدی ${user.displayName || "عضو خانواده"}`, "success");
-  }
 });
 
-// ==================== CHECK EXISTING SESSION ====================
-function checkExistingSession() {
-  const user = auth.currentUser;
-  if (user) {
-    console.log("✅ Existing session found:", user.email);
-    currentUser = user;
-    updateAuthUI();
-  } else {
-    console.log("No existing session found");
-  }
+// ==================== مقداردهی اولیه DOM ====================
+function initDOMElements() {
+  foodsContainer = document.getElementById("foodsContainer");
+  skeletonContainer = document.getElementById("skeletonContainer");
+  foodForm = document.getElementById("foodForm");
+  categoryButtons = document.querySelectorAll(".category-btn");
+  randomBtn = document.getElementById("randomBtn");
+  modal = document.getElementById("randomModal");
+  closeModal = document.querySelector(".close-modal");
+  loadingSpinner = document.getElementById("loadingSpinner");
+  randomFoodResult = document.getElementById("randomFoodResult");
+  randomFoodImage = document.getElementById("randomFoodImage");
+  randomFoodName = document.getElementById("randomFoodName");
+  randomFoodCategory = document.getElementById("randomFoodCategory");
+  favoriteModal = document.getElementById("favoriteModal");
+  closeFavorite = document.querySelector(".close-favorite");
+  exportBtn = document.getElementById("exportBtn");
+  importBtn = document.getElementById("importBtn");
+  importModal = document.getElementById("importModal");
+  closeImport = document.getElementById("closeImport");
+  importFile = document.getElementById("importFile");
+  confirmImportBtn = document.getElementById("confirmImportBtn");
+  statusChip = document.getElementById("statusChip");
+  viewColBtns = document.querySelectorAll(".view-col-btn");
+  loginBtn = document.getElementById("loginBtn");
+  logoutBtn = document.getElementById("logoutBtn");
+  userProfile = document.getElementById("userProfile");
+  userAvatar = document.getElementById("userAvatar");
+  userName = document.getElementById("userName");
+  viewerMessage = document.getElementById("viewerMessage");
+  addFoodSection = document.getElementById("addFoodSection");
+  
+  console.log("DOM Elements initialized, loginBtn found:", !!loginBtn);
 }
 
 // ==================== FIREBASE REALTIME SYNC ====================
@@ -627,14 +635,16 @@ closeFavorite.addEventListener("click", () => {
 });
 
 // ==================== CATEGORY FILTER ====================
-document.querySelectorAll(".category-btn").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
-    button.classList.add("active");
-    currentCategory = button.dataset.category;
-    renderFoods();
+function setupCategoryFilters() {
+  document.querySelectorAll(".category-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      currentCategory = button.dataset.category;
+      renderFoods();
+    });
   });
-});
+}
 
 // ==================== VIEW COLUMNS ====================
 function loadColumns() {
@@ -651,154 +661,182 @@ function loadColumns() {
   });
 }
 
-viewColBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const cols = btn.dataset.cols;
-    if (foodsContainer) foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    if (skeletonContainer) skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    localStorage.setItem("foodColumns", cols);
-    
-    viewColBtns.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+function setupViewButtons() {
+  viewColBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const cols = btn.dataset.cols;
+      if (foodsContainer) foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      if (skeletonContainer) skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      localStorage.setItem("foodColumns", cols);
+      
+      viewColBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
   });
-});
+}
 
 // ==================== RANDOM FOOD ====================
-randomBtn.addEventListener("click", () => {
-  const visibleFoods = getFilteredFoods();
-
-  if (!visibleFoods.length) {
-    showToast("🍽️ غذایی پیدا نشد!", "error");
-    return;
-  }
-
-  modal.style.display = "flex";
-  loadingSpinner.style.display = "block";
-  randomFoodResult.classList.add("hidden");
-
-  setTimeout(() => {
-    const food = visibleFoods[Math.floor(Math.random() * visibleFoods.length)];
-    
-    randomFoodImage.src = food.image || "https://via.placeholder.com/400x300?text=🍲";
-    randomFoodImage.alt = food.name;
-    randomFoodName.textContent = "😋 " + food.name;
-    randomFoodCategory.textContent = "دسته بندی: " + food.category;
-    
-    loadingSpinner.style.display = "none";
-    randomFoodResult.classList.remove("hidden");
-  }, 300);
-});
-
-closeModal.addEventListener("click", () => {
-  modal.style.display = "none";
-});
-
-// ==================== EXPORT BACKUP ====================
-exportBtn?.addEventListener("click", () => {
-  if (!isApproved) {
-    showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بگیرند", "error");
-    return;
-  }
-  
-  const exportData = foods.map(food => ({
-    name: food.name,
-    category: food.category,
-    image: food.image || "",
-    favorites: food.favorites || [],
-    exportedAt: new Date().toISOString()
-  }));
-  
-  const dataStr = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `foods-backup-${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-  showToast(`💾 بکاپ گرفته شد (${exportData.length} غذا)`, "success");
-});
-
-// ==================== IMPORT BACKUP ====================
-importBtn?.addEventListener("click", () => {
-  if (!isApproved) {
-    showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بازیابی کنند", "error");
-    return;
-  }
-  importModal.style.display = "flex";
-  importFile.value = "";
-});
-
-closeImport?.addEventListener("click", () => {
-  importModal.style.display = "none";
-});
-
-confirmImportBtn?.addEventListener("click", async () => {
-  if (!isApproved) {
-    showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بازیابی کنند", "error");
-    return;
-  }
-  
-  if (!importFile.files || !importFile.files[0]) {
-    showToast("لطفاً فایل بکاپ را انتخاب کنید", "error");
-    return;
-  }
-  
-  try {
-    const file = importFile.files[0];
-    const text = await file.text();
-    const importedFoods = JSON.parse(text);
-    
-    if (!Array.isArray(importedFoods)) {
-      throw new Error("فرمت فایل نامعتبر است");
-    }
-    
-    let successCount = 0;
-    for (const food of importedFoods) {
-      if (food.name && food.category) {
-        await addDoc(foodsRef, {
-          name: food.name,
-          category: food.category,
-          image: food.image || "",
-          favorites: food.favorites || []
-        });
-        successCount++;
+function setupRandomButton() {
+  if (randomBtn) {
+    randomBtn.addEventListener("click", () => {
+      const visibleFoods = getFilteredFoods();
+      if (!visibleFoods.length) {
+        showToast("🍽️ غذایی پیدا نشد!", "error");
+        return;
       }
-    }
-    
-    importModal.style.display = "none";
-    showToast(`📥 ${successCount} غذا با موفقیت بازیابی شد`, "success");
-  } catch (error) {
-    console.error("Import error:", error);
-    showToast("خطا در بازیابی فایل بکاپ", "error");
+      modal.style.display = "flex";
+      loadingSpinner.style.display = "block";
+      randomFoodResult.classList.add("hidden");
+      setTimeout(() => {
+        const food = visibleFoods[Math.floor(Math.random() * visibleFoods.length)];
+        randomFoodImage.src = food.image || "https://via.placeholder.com/400x300?text=🍲";
+        randomFoodImage.alt = food.name;
+        randomFoodName.textContent = "😋 " + food.name;
+        randomFoodCategory.textContent = "دسته بندی: " + food.category;
+        loadingSpinner.style.display = "none";
+        randomFoodResult.classList.remove("hidden");
+      }, 300);
+    });
   }
-});
+  
+  if (closeModal) {
+    closeModal.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+  }
+}
+
+// ==================== EXPORT/IMPORT BACKUP ====================
+function setupBackupButtons() {
+  exportBtn?.addEventListener("click", () => {
+    if (!isApproved) {
+      showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بگیرند", "error");
+      return;
+    }
+    const exportData = foods.map(food => ({
+      name: food.name,
+      category: food.category,
+      image: food.image || "",
+      favorites: food.favorites || [],
+      exportedAt: new Date().toISOString()
+    }));
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `foods-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`💾 بکاپ گرفته شد (${exportData.length} غذا)`, "success");
+  });
+
+  importBtn?.addEventListener("click", () => {
+    if (!isApproved) {
+      showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بازیابی کنند", "error");
+      return;
+    }
+    importModal.style.display = "flex";
+    importFile.value = "";
+  });
+
+  closeImport?.addEventListener("click", () => {
+    importModal.style.display = "none";
+  });
+
+  confirmImportBtn?.addEventListener("click", async () => {
+    if (!isApproved) {
+      showToast("⛔ فقط اعضای خانواده می‌توانند بکاپ بازیابی کنند", "error");
+      return;
+    }
+    if (!importFile.files || !importFile.files[0]) {
+      showToast("لطفاً فایل بکاپ را انتخاب کنید", "error");
+      return;
+    }
+    try {
+      const file = importFile.files[0];
+      const text = await file.text();
+      const importedFoods = JSON.parse(text);
+      if (!Array.isArray(importedFoods)) {
+        throw new Error("فرمت فایل نامعتبر است");
+      }
+      let successCount = 0;
+      for (const food of importedFoods) {
+        if (food.name && food.category) {
+          await addDoc(foodsRef, {
+            name: food.name,
+            category: food.category,
+            image: food.image || "",
+            favorites: food.favorites || []
+          });
+          successCount++;
+        }
+      }
+      importModal.style.display = "none";
+      showToast(`📥 ${successCount} غذا با موفقیت بازیابی شد`, "success");
+    } catch (error) {
+      console.error("Import error:", error);
+      showToast("خطا در بازیابی فایل بکاپ", "error");
+    }
+  });
+}
 
 // ==================== MODAL CLOSE ON OUTSIDE CLICK ====================
-window.addEventListener("click", (e) => {
-  if (e.target === modal) modal.style.display = "none";
-  if (e.target === favoriteModal) favoriteModal.style.display = "none";
-  if (e.target === importModal) importModal.style.display = "none";
-  const editModalElem = document.getElementById("editModal");
-  if (e.target === editModalElem) editModalElem.style.display = "none";
-});
+function setupModalClose() {
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+    if (e.target === favoriteModal) favoriteModal.style.display = "none";
+    if (e.target === importModal) importModal.style.display = "none";
+    const editModalElem = document.getElementById("editModal");
+    if (e.target === editModalElem) editModalElem.style.display = "none";
+  });
+}
+
+// ==================== CHECK EXISTING SESSION ====================
+function checkExistingSession() {
+  const user = auth.currentUser;
+  if (user) {
+    console.log("✅ Existing session found:", user.email);
+    currentUser = user;
+    updateAuthUI();
+  } else {
+    console.log("No existing session found");
+  }
+}
+
+// ==================== SETUP EVENT LISTENERS ====================
+function setupEventListeners() {
+  if (loginBtn) {
+    loginBtn.addEventListener("click", handleGoogleLogin);
+    console.log("✅ Login button listener attached");
+  }
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+    console.log("✅ Logout button listener attached");
+  }
+}
 
 // ==================== INIT ====================
-// 1. ابتدا بررسی نتیجه redirect (اگر از گوگل برگشته باشیم)
-handleRedirectResult();
-
-// 2. بعد بررسی session موجود
-setTimeout(() => {
+async function init() {
+  await waitForDOM();
+  initDOMElements();
+  
+  handleRedirectResult();
   checkExistingSession();
-}, 100);
+  
+  loadColumns();
+  startRealtimeSync();
+  
+  setupEventListeners();
+  setupCategoryFilters();
+  setupViewButtons();
+  setupRandomButton();
+  setupBackupButtons();
+  setupModalClose();
+  
+  console.log("🚀 App initialized successfully!");
+}
 
-// 3. بارگذاری تنظیمات ستون‌ها
-loadColumns();
-
-// 4. شروع همگام‌سازی بیدرنگ Firebase
-startRealtimeSync();
-
-console.log("App initialized successfully!");
+init();
