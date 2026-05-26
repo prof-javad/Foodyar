@@ -57,9 +57,9 @@ let isApproved = false;
 
 // لیست ایمیل‌های مجاز برای ویرایش
 const ALLOWED_EMAILS = [
-  "your-email@gmail.com",    // ایمیل خودت رو اینجا بذار
-  "mom@gmail.com",           // ایمیل مامان
-  "family@gmail.com"         // ایمیل اعضای خانواده
+  "jjwad1817@gmail.com",    // ایمیل خودت رو اینجا بذار
+  "eli985143@gmail.com",           // ایمیل مامان
+  "ashraf.ir.090@gmail.com"         // ایمیل اعضای خانواده
 ];
 
 const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
