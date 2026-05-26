@@ -5,22 +5,18 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  updateDoc,
-  doc,
-  onSnapshot,
-  enableIndexedDbPersistence,
-  enableNetwork,
-  disableNetwork,
-  CACHE_SIZE_UNLIMITED
+  getAuth,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
+  browserLocalPersistence,
+  setPersistence
 
 }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
 
   getAuth,
