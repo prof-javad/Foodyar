@@ -110,11 +110,15 @@ window.addEventListener("online", () => {
 window.addEventListener("offline", () => {
   isOnline = false;
   updateStatusUI();
+  showToast("اینترنت قطع شد! تغییرات بعداً همگام‌سازی می‌شوند", "error");
 });
 
 // ==================== AUTH UI UPDATE ====================
 function updateAuthUI() {
+  console.log("updateAuthUI called, currentUser:", currentUser ? currentUser.email : "null");
+  
   if (!currentUser) {
+    // کاربر لاگین نیست
     loginBtn.style.display = "flex";
     userProfile.style.display = "none";
     viewerMessage.style.display = "flex";
@@ -126,14 +130,20 @@ function updateAuthUI() {
     
     renderFoods();
   } else {
+    // کاربر لاگین است
     loginBtn.style.display = "none";
     userProfile.style.display = "flex";
     
+    // تنظیم اطلاعات کاربر
     userAvatar.src = currentUser.photoURL || "https://via.placeholder.com/36";
     userName.textContent = currentUser.displayName || currentUser.email?.split('@')[0] || "کاربر";
     
+    // بررسی دسترسی
     const userEmail = currentUser.email;
     isApproved = ALLOWED_EMAILS.includes(userEmail);
+    
+    console.log("User email:", userEmail);
+    console.log("Is approved:", isApproved);
     
     if (isApproved) {
       viewerMessage.style.display = "none";
@@ -141,7 +151,6 @@ function updateAuthUI() {
         el.style.display = "block";
       });
       if (addFoodSection) addFoodSection.style.display = "block";
-      showToast(`✅ خوش آمدی ${currentUser.displayName || "عضو خانواده"}`, "success");
     } else {
       viewerMessage.style.display = "flex";
       viewerMessage.innerHTML = "⛔ شما دسترسی ویرایش ندارید. فقط اعضای خانواده می‌توانند غذا اضافه کنند.";
@@ -149,7 +158,6 @@ function updateAuthUI() {
         el.style.display = "none";
       });
       if (addFoodSection) addFoodSection.style.display = "none";
-      showToast("⛔ دسترسی ویرایش ندارید", "warning");
     }
     
     renderFoods();
@@ -184,6 +192,7 @@ function showAuthLoading(show) {
 async function handleGoogleLogin() {
   try {
     showAuthLoading(true);
+    console.log("Starting Google Sign-In with redirect...");
     await signInWithRedirect(auth, new GoogleAuthProvider());
   } catch (error) {
     console.error("Login error:", error);
@@ -194,11 +203,15 @@ async function handleGoogleLogin() {
 
 // ==================== HANDLE REDIRECT RESULT ====================
 function handleRedirectResult() {
+  console.log("Checking redirect result...");
   getRedirectResult(auth)
     .then((result) => {
       showAuthLoading(false);
       if (result && result.user) {
-        console.log("Login success:", result.user.email);
+        console.log("✅ Redirect login success:", result.user.email);
+        showToast(`🔐 خوش آمدی ${result.user.displayName || result.user.email}`, "success");
+      } else {
+        console.log("No redirect result");
       }
     })
     .catch((error) => {
@@ -214,6 +227,7 @@ function handleRedirectResult() {
 async function handleLogout() {
   try {
     await signOut(auth);
+    console.log("User logged out");
     currentUser = null;
     isApproved = false;
     updateAuthUI();
@@ -224,17 +238,28 @@ async function handleLogout() {
   }
 }
 
-// ==================== AUTH STATE LISTENER ====================
+// ==================== AUTH STATE LISTENER (مهمترین بخش) ====================
 onAuthStateChanged(auth, (user) => {
+  console.log("🔥 onAuthStateChanged triggered:", user ? user.email : "No user");
   currentUser = user;
   updateAuthUI();
+  
+  if (user && ALLOWED_EMAILS.includes(user.email) && !isApproved) {
+    showToast(`✅ خوش آمدی ${user.displayName || "عضو خانواده"}`, "success");
+  }
 });
 
-// ==================== INIT AUTH ====================
-handleRedirectResult();
-
-loginBtn?.addEventListener("click", handleGoogleLogin);
-logoutBtn?.addEventListener("click", handleLogout);
+// ==================== CHECK EXISTING SESSION ====================
+function checkExistingSession() {
+  const user = auth.currentUser;
+  if (user) {
+    console.log("✅ Existing session found:", user.email);
+    currentUser = user;
+    updateAuthUI();
+  } else {
+    console.log("No existing session found");
+  }
+}
 
 // ==================== FIREBASE REALTIME SYNC ====================
 function startRealtimeSync() {
@@ -255,6 +280,8 @@ function startRealtimeSync() {
           ...doc.data()
         });
       });
+      
+      console.log("Foods loaded:", foods.length);
       
       if (skeletonContainer) skeletonContainer.style.display = "none";
       if (foodsContainer) foodsContainer.style.display = "grid";
@@ -755,5 +782,18 @@ window.addEventListener("click", (e) => {
 });
 
 // ==================== INIT ====================
+// 1. ابتدا بررسی نتیجه redirect (اگر از گوگل برگشته باشیم)
+handleRedirectResult();
+
+// 2. بعد بررسی session موجود
+setTimeout(() => {
+  checkExistingSession();
+}, 100);
+
+// 3. بارگذاری تنظیمات ستون‌ها
 loadColumns();
+
+// 4. شروع همگام‌سازی بیدرنگ Firebase
 startRealtimeSync();
+
+console.log("App initialized successfully!");
