@@ -24,7 +24,8 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
 
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -69,7 +70,8 @@ export {
   enableNetwork,
   disableNetwork,
   auth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
