@@ -874,3 +874,13 @@ body {
     height: 38px;
   }
 }
+/* اضافه کن به انتهای فایل style.css */
+.add-food-section.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.favorite-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
