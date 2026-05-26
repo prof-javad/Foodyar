@@ -870,3 +870,93 @@ body {
     width: 100%;
   }
 }
+
+
+
+/* MOBILE UX FIXES */
+
+.user-panel{
+flex-direction:row !important;
+padding:10px 12px !important;
+margin:10px !important;
+gap:8px !important;
+align-items:center !important;
+}
+
+.user-avatar{
+width:40px !important;
+height:40px !important;
+}
+
+.auth-actions{
+width:auto !important;
+}
+
+.login-btn,.logout-btn{
+padding:8px 12px !important;
+font-size:13px !important;
+white-space:nowrap;
+}
+
+.guest-message{
+display:none !important;
+}
+
+.site-footer-tools{
+padding:18px 14px 28px;
+display:flex;
+justify-content:center;
+}
+
+.footer-tools-group{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.toast-container{
+position:fixed !important;
+bottom:18px !important;
+top:auto !important;
+left:50% !important;
+transform:translateX(-50%) !important;
+max-width:90vw !important;
+z-index:9999;
+pointer-events:none;
+}
+
+.toast{
+font-size:13px !important;
+padding:10px 14px !important;
+border-radius:16px !important;
+margin-top:8px !important;
+max-width:90vw;
+}
+
+.filters-container::-webkit-scrollbar,
+.category-filters::-webkit-scrollbar,
+.favorite-filters::-webkit-scrollbar{
+display:none;
+}
+
+.filters-container,
+.category-filters,
+.favorite-filters{
+scrollbar-width:none;
+-ms-overflow-style:none;
+}
+
+.filters-title,
+.category-title,
+.favorite-title{
+display:none !important;
+}
+
+@media(max-width:640px){
+
+.login-btn,.logout-btn{
+width:auto !important;
+}
+
+}
