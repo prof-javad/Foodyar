@@ -1,177 +1,134 @@
 import {
-
   db,
-
   collection,
-
   addDoc,
-
-  getDocs,
-
   deleteDoc,
-
   updateDoc,
+  doc,
+  onSnapshot,
+  enableNetwork,
+  disableNetwork
+} from "./firebase.js";
 
-  doc
+// DOM Elements
+const foodsContainer = document.getElementById("foodsContainer");
+const skeletonContainer = document.getElementById("skeletonContainer");
+const foodForm = document.getElementById("foodForm");
+const categoryButtons = document.querySelectorAll(".category-btn");
+const randomBtn = document.getElementById("randomBtn");
+const modal = document.getElementById("randomModal");
+const closeModal = document.querySelector(".close-modal");
+const loadingSpinner = document.getElementById("loadingSpinner");
+const randomFoodResult = document.getElementById("randomFoodResult");
+const randomFoodImage = document.getElementById("randomFoodImage");
+const randomFoodName = document.getElementById("randomFoodName");
+const randomFoodCategory = document.getElementById("randomFoodCategory");
+const favoriteModal = document.getElementById("favoriteModal");
+const closeFavorite = document.querySelector(".close-favorite");
+const exportBtn = document.getElementById("exportBtn");
+const importBtn = document.getElementById("importBtn");
+const importModal = document.getElementById("importModal");
+const closeImport = document.getElementById("closeImport");
+const importFile = document.getElementById("importFile");
+const confirmImportBtn = document.getElementById("confirmImportBtn");
+const statusChip = document.getElementById("statusChip");
+const viewColBtns = document.querySelectorAll(".view-col-btn");
 
-}
-from "./firebase.js";
-
-const foodsContainer =
-document.getElementById("foodsContainer");
-
-const foodForm =
-document.getElementById("foodForm");
-
-const successMessage =
-document.getElementById("successMessage");
-
-const categoryButtons =
-document.querySelectorAll(".category-btn");
-
-const favoriteFilterButtons =
-document.querySelectorAll(".favorite-filter-btn");
-
-const randomBtn =
-document.getElementById("randomBtn");
-
-const modal =
-document.getElementById("randomModal");
-
-const closeModal =
-document.querySelector(".close-modal");
-
-const loadingSpinner =
-document.getElementById("loadingSpinner");
-
-const randomFoodResult =
-document.getElementById("randomFoodResult");
-
-const randomFoodImage =
-document.getElementById("randomFoodImage");
-
-const randomFoodName =
-document.getElementById("randomFoodName");
-
-const randomFoodCategory =
-document.getElementById("randomFoodCategory");
-
-const favoriteModal =
-document.getElementById("favoriteModal");
-
-const closeFavorite =
-document.querySelector(".close-favorite");
-
-const foodsRef =
-collection(db, "foods");
-
+const foodsRef = collection(db, "foods");
 let foods = [];
-
 let selectedFoodId = null;
-
 let currentCategory = "همه";
-
 let selectedFavoriteFilters = [];
+let unsubscribe = null;
+let isOnline = navigator.onLine;
+let isSyncing = false;
 
-// تنظیمات اعضای مجاز برای علاقه‌مندی
 const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
 
-async function loadFoods(){
-
-  foods = [];
-
-  const snapshot =
-  await getDocs(foodsRef);
-
-  snapshot.forEach((item)=>{
-
-    foods.push({
-
-      firebaseId:item.id,
-
-      ...item.data()
-
-    });
-
-  });
-
-  if(foods.length === 0){
-
-    await seedFoods();
-
-    return;
-  }
-
-  renderFoods();
-  updateFavoriteFilterButtons();
+// ==================== TOAST NOTIFICATION ====================
+function showToast(message, type = "info") {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: "✅",
+    error: "❌",
+    info: "ℹ️"
+  };
+  
+  toast.innerHTML = `<span>${icons[type] || "ℹ️"}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = "toastSlideIn 0.3s reverse";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
-async function seedFoods(){
+// ==================== STATUS INDICATOR ====================
+function updateStatusUI() {
+  if (!isOnline) {
+    statusChip.className = "status-chip offline";
+    statusChip.innerHTML = '<span class="status-dot"></span><span class="status-text">آفلاین</span>';
+    showToast("اینترنت قطع شد! تغییرات بعداً همگام‌سازی می‌شوند", "error");
+  } else if (isSyncing) {
+    statusChip.className = "status-chip syncing";
+    statusChip.innerHTML = '<span class="status-dot"></span><span class="status-text">در حال همگام‌سازی...</span>';
+  } else {
+    statusChip.className = "status-chip online";
+    statusChip.innerHTML = '<span class="status-dot"></span><span class="status-text">آنلاین</span>';
+  }
+}
 
-  const demoFoods = [
+window.addEventListener("online", () => {
+  isOnline = true;
+  updateStatusUI();
+  showToast("اتصال اینترنت برقرار شد ✅", "success");
+});
 
-    {
+window.addEventListener("offline", () => {
+  isOnline = false;
+  updateStatusUI();
+});
 
-      name:"قورمه سبزی",
-
-      category:"ایرانی",
-
-      image:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200&auto=format&fit=crop",
-
-      favorites:[]
-
+// ==================== FIREBASE REALTIME SYNC ====================
+function startRealtimeSync() {
+  if (unsubscribe) unsubscribe();
+  
+  skeletonContainer.style.display = "grid";
+  foodsContainer.style.display = "none";
+  
+  unsubscribe = onSnapshot(foodsRef, 
+    (snapshot) => {
+      isSyncing = false;
+      updateStatusUI();
+      
+      foods = [];
+      snapshot.forEach((doc) => {
+        foods.push({
+          firebaseId: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      skeletonContainer.style.display = "none";
+      foodsContainer.style.display = "grid";
+      
+      updateFavoriteFilterButtons();
+      renderFoods();
+      showToast("همگام‌سازی شد", "success");
     },
-
-    {
-
-      name:"قیمه",
-
-      category:"ایرانی",
-
-      image:"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
-
-      favorites:[]
-
-    },
-
-    {
-
-      name:"ماکارونی",
-
-      category:"خارجی",
-
-      image:"https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=1200&auto=format&fit=crop",
-
-      favorites:[]
-
-    },
-
-    {
-
-      name:"لازانیا",
-
-      category:"خارجی",
-
-      image:"https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=1200&auto=format&fit=crop",
-
-      favorites:[]
-
+    (error) => {
+      console.error("Firestore error:", error);
+      skeletonContainer.style.display = "none";
+      foodsContainer.style.display = "grid";
+      showToast("خطا در همگام‌سازی", "error");
     }
-
-  ];
-
-  for(const food of demoFoods){
-
-    await addDoc(
-      foodsRef,
-      food
-    );
-  }
-
-  loadFoods();
+  );
 }
 
-// بروزرسانی دکمه‌های فیلتر علاقه‌مندی بر اساس غذاهای موجود
+// ==================== UPDATE FAVORITE FILTERS ====================
 function updateFavoriteFilterButtons() {
   const allFavoritePeople = new Set();
   
@@ -185,7 +142,7 @@ function updateFavoriteFilterButtons() {
     }
   });
   
-  const filterContainer = document.querySelector(".favorite-filter-buttons");
+  const filterContainer = document.getElementById("favoriteFiltersContainer");
   if (!filterContainer) return;
   
   let newHtml = `<button class="chip favorite-filter-btn active" data-name="همه">همه</button>`;
@@ -198,8 +155,7 @@ function updateFavoriteFilterButtons() {
   
   filterContainer.innerHTML = newHtml;
   
-  const newButtons = document.querySelectorAll(".favorite-filter-btn");
-  newButtons.forEach((button) => {
+  document.querySelectorAll(".favorite-filter-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const name = button.dataset.name;
       
@@ -227,19 +183,17 @@ function updateFavoriteFilterButtons() {
   });
 }
 
-// تابع اعمال همزمان فیلتر دسته‌بندی و علاقه‌مندی
+// ==================== FILTER FUNCTION ====================
 function getFilteredFoods() {
   let filteredFoods = [...foods];
 
-  // فیلتر بر اساس دسته‌بندی
-  if(currentCategory !== "همه"){
+  if (currentCategory !== "همه") {
     filteredFoods = filteredFoods.filter(
       (food) => food.category === currentCategory
     );
   }
 
-  // فیلتر بر اساس علاقه‌مندی
-  if(selectedFavoriteFilters.length > 0){
+  if (selectedFavoriteFilters.length > 0) {
     filteredFoods = filteredFoods.filter((food) => {
       if (!food.favorites || !Array.isArray(food.favorites)) return false;
       return selectedFavoriteFilters.every(
@@ -251,10 +205,9 @@ function getFilteredFoods() {
   return filteredFoods;
 }
 
-function renderFoods(){
-
+// ==================== RENDER FOODS ====================
+function renderFoods() {
   foodsContainer.innerHTML = "";
-
   const filteredFoods = getFilteredFoods();
 
   if (filteredFoods.length === 0) {
@@ -262,151 +215,125 @@ function renderFoods(){
     return;
   }
 
-  filteredFoods.forEach((food)=>{
-
-    const card =
-    document.createElement("div");
-
+  filteredFoods.forEach((food) => {
+    const card = document.createElement("div");
     card.className = "food-card";
 
     card.innerHTML = `
-
-      ${food.image ? `<img class="food-image" src="${food.image}" alt="${food.name}">` : `<div class="food-image-placeholder">🍲 ${food.name}</div>`}
-
+      ${food.image ? 
+        `<img class="food-image" src="${food.image}" alt="${food.name}" onerror="this.src='https://via.placeholder.com/400x300?text=🍲'">` : 
+        `<div class="food-image-placeholder">🍲</div>`
+      }
       <div class="food-content">
-
         <div class="food-header">
-
-          <h3 class="food-title">
-            ${food.name}
-          </h3>
-
+          <h3 class="food-title">${escapeHtml(food.name)}</h3>
           <span>🍴</span>
-
         </div>
-
-        <div class="category-tag">
-          ${food.category}
-        </div>
-
+        <div class="category-tag">${food.category}</div>
         <div class="favorite-list">
-
-          ${
-            food.favorites && food.favorites.length
-            ?
-            "❤️ " + food.favorites.join(" ، ")
-            :
-            "هنوز کسی علاقه‌مند نشده"
-          }
-
+          ${food.favorites && food.favorites.length ?
+            "❤️ " + food.favorites.join(" ، ") :
+            "هنوز کسی علاقه‌مند نشده"}
         </div>
-
         <div class="card-actions">
-
-          <button
-            class="favorite-btn"
-            onclick="openFavoriteModal('${food.firebaseId}')"
-          >
-            ⭐ علاقه‌مندان
-          </button>
-
-          <button
-            class="edit-btn"
-            onclick="openEditModal('${food.firebaseId}')"
-          >
-            ✏️ ویرایش
-          </button>
-
-          <button
-            class="delete-btn"
-            onclick="deleteFood('${food.firebaseId}')"
-          >
-            🗑 حذف
-          </button>
-
+          <button class="favorite-btn" onclick="window.openFavoriteModal('${food.firebaseId}')">⭐ علاقه‌مندان</button>
+          <button class="edit-btn" onclick="window.openEditModal('${food.firebaseId}')">✏️ ویرایش</button>
+          <button class="delete-btn" onclick="window.deleteFood('${food.firebaseId}')">🗑 حذف</button>
         </div>
-
       </div>
-
     `;
-
     foodsContainer.appendChild(card);
-
   });
-
 }
 
-foodForm.addEventListener(
-"submit",
-async(e)=>{
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
 
+// ==================== ADD FOOD ====================
+foodForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  const name =
-  document.getElementById("foodName").value;
-
-  const image =
-  document.getElementById("foodImage").value;
-
-  const category =
-  document.getElementById("foodCategory").value;
-
-  await addDoc(
-    foodsRef,
-    {
-
+  
+  const name = document.getElementById("foodName").value.trim();
+  const image = document.getElementById("foodImage").value.trim();
+  const category = document.getElementById("foodCategory").value;
+  
+  if (!name) {
+    showToast("لطفاً اسم غذا را وارد کنید", "error");
+    return;
+  }
+  
+  if (!category) {
+    showToast("لطفاً دسته بندی را انتخاب کنید", "error");
+    return;
+  }
+  
+  try {
+    await addDoc(foodsRef, {
       name,
-
       image: image || "",
-
       category,
-
-      favorites:[]
-
-    }
-  );
-
-  foodForm.reset();
-
-  successMessage.style.display =
-  "block";
-
-  setTimeout(()=>{
-
-    successMessage.style.display =
-    "none";
-
-  },2500);
-
-  loadFoods();
-
+      favorites: []
+    });
+    
+    foodForm.reset();
+    showToast("✅ غذا اضافه شد", "success");
+  } catch (error) {
+    console.error("Error adding food:", error);
+    showToast("خطا در اضافه کردن غذا", "error");
+  }
 });
 
-window.deleteFood =
-async function(id){
-
+// ==================== DELETE FOOD ====================
+window.deleteFood = async function(id) {
   if (confirm("آیا از حذف این غذا مطمئن هستید؟")) {
-    await deleteDoc(
-      doc(db,"foods",id)
-    );
-    loadFoods();
+    try {
+      await deleteDoc(doc(db, "foods", id));
+      showToast("🗑 غذا حذف شد", "success");
+    } catch (error) {
+      showToast("خطا در حذف غذا", "error");
+    }
   }
 };
 
-// مدال ویرایش
+// ==================== EDIT MODAL ====================
 window.openEditModal = function(id) {
   const food = foods.find(f => f.firebaseId === id);
   if (!food) return;
   
   selectedFoodId = id;
-  
   const editModal = document.getElementById("editModal");
+  
   document.getElementById("editName").value = food.name;
   document.getElementById("editImage").value = food.image || "";
   document.getElementById("editCategory").value = food.category;
   
+  const previewImg = document.getElementById("previewImg");
+  if (food.image) {
+    previewImg.src = food.image;
+    previewImg.style.display = "block";
+  } else {
+    previewImg.style.display = "none";
+  }
+  
   editModal.style.display = "flex";
 };
+
+document.getElementById("editImage")?.addEventListener("input", (e) => {
+  const previewImg = document.getElementById("previewImg");
+  if (e.target.value) {
+    previewImg.src = e.target.value;
+    previewImg.style.display = "block";
+  } else {
+    previewImg.style.display = "none";
+  }
+});
 
 document.getElementById("saveEditBtn")?.addEventListener("click", async () => {
   const newName = document.getElementById("editName").value.trim();
@@ -414,33 +341,37 @@ document.getElementById("saveEditBtn")?.addEventListener("click", async () => {
   const newCategory = document.getElementById("editCategory").value;
   
   if (!newName) {
-    alert("لطفاً اسم غذا را وارد کنید");
+    showToast("لطفاً اسم غذا را وارد کنید", "error");
     return;
   }
   
-  await updateDoc(
-    doc(db, "foods", selectedFoodId),
-    {
+  try {
+    await updateDoc(doc(db, "foods", selectedFoodId), {
       name: newName,
       image: newImage,
       category: newCategory
-    }
-  );
-  
+    });
+    
+    document.getElementById("editModal").style.display = "none";
+    showToast("✏️ غذا ویرایش شد", "success");
+  } catch (error) {
+    showToast("خطا در ویرایش غذا", "error");
+  }
+});
+
+document.getElementById("cancelEditBtn")?.addEventListener("click", () => {
   document.getElementById("editModal").style.display = "none";
-  loadFoods();
 });
 
 document.getElementById("closeEdit")?.addEventListener("click", () => {
   document.getElementById("editModal").style.display = "none";
 });
 
-window.openFavoriteModal =
-function(id){
-
+// ==================== FAVORITE MODAL ====================
+window.openFavoriteModal = function(id) {
   selectedFoodId = id;
+  const membersList = document.getElementById("membersList");
   
-  const membersList = document.querySelector(".members-list");
   if (membersList) {
     membersList.innerHTML = ALLOWED_MEMBERS.map(member => 
       `<button class="member-btn" data-member="${member}">${member}</button>`
@@ -453,164 +384,182 @@ function(id){
     });
   }
   
-  favoriteModal.style.display =
-  "flex";
+  favoriteModal.style.display = "flex";
 };
 
-async function addFavorite(name){
+async function addFavorite(name) {
+  const food = foods.find(f => f.firebaseId === selectedFoodId);
+  if (!food) return;
 
-  const food =
-  foods.find(
-    (f)=>
-    f.firebaseId === selectedFoodId
-  );
-
-  if(!food) return;
-
-  const favorites =
-  [...(food.favorites || [])];
-
-  if(!favorites.includes(name)){
+  const favorites = [...(food.favorites || [])];
+  
+  if (!favorites.includes(name)) {
     favorites.push(name);
+    showToast(`⭐ ${name} به علاقه‌مندان اضافه شد`, "success");
   } else {
     const index = favorites.indexOf(name);
     favorites.splice(index, 1);
+    showToast(`❤️ ${name} از علاقه‌مندان حذف شد`, "info");
   }
 
-  await updateDoc(
-
-    doc(
-      db,
-      "foods",
-      selectedFoodId
-    ),
-
-    {
-      favorites
-    }
-
-  );
-
-  favoriteModal.style.display =
-  "none";
-
-  loadFoods();
+  try {
+    await updateDoc(doc(db, "foods", selectedFoodId), { favorites });
+    favoriteModal.style.display = "none";
+  } catch (error) {
+    showToast("خطا در ثبت علاقه‌مندی", "error");
+  }
 }
 
-categoryButtons.forEach((button)=>{
-
-  button.addEventListener("click",()=>{
-
-    categoryButtons.forEach(
-      (btn)=>
-      btn.classList.remove("active")
-    );
-
-    button.classList.add("active");
-
-    currentCategory =
-    button.dataset.category;
-
-    renderFoods();
-
-  });
-
+closeFavorite.addEventListener("click", () => {
+  favoriteModal.style.display = "none";
 });
 
-randomBtn.addEventListener("click",()=>{
+// ==================== CATEGORY FILTER ====================
+document.querySelectorAll(".category-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+    currentCategory = button.dataset.category;
+    renderFoods();
+  });
+});
 
-  // استفاده از تابع getFilteredFoods برای اعمال همزمان هر دو فیلتر
+// ==================== VIEW COLUMNS ====================
+function loadColumns() {
+  const cols = localStorage.getItem("foodColumns") || "2";
+  foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  
+  viewColBtns.forEach(btn => {
+    if (btn.dataset.cols === cols) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+}
+
+viewColBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const cols = btn.dataset.cols;
+    foodsContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    localStorage.setItem("foodColumns", cols);
+    
+    viewColBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
+});
+
+// ==================== RANDOM FOOD ====================
+randomBtn.addEventListener("click", () => {
   const visibleFoods = getFilteredFoods();
 
-  if(!visibleFoods.length){
-
-    alert("غذایی پیدا نشد 😢");
-
+  if (!visibleFoods.length) {
+    showToast("🍽️ غذایی پیدا نشد!", "error");
     return;
   }
 
-  modal.style.display =
-  "flex";
+  modal.style.display = "flex";
+  loadingSpinner.style.display = "block";
+  randomFoodResult.classList.add("hidden");
 
-  loadingSpinner.style.display =
-  "block";
-
-  randomFoodResult.classList.add(
-    "hidden"
-  );
-
-  setTimeout(()=>{
-
-    const food =
-    visibleFoods[
-      Math.floor(
-        Math.random() *
-        visibleFoods.length
-      )
-    ];
-
-    randomFoodImage.src =
-    food.image || "https://via.placeholder.com/400x300?text=غذا";
-
-    randomFoodName.textContent =
-    "😋 " + food.name;
-
-    randomFoodCategory.textContent =
-    "دسته بندی: " + food.category;
-
-    loadingSpinner.style.display =
-    "none";
-
-    randomFoodResult.classList.remove(
-      "hidden"
-    );
-
-  },500);
-
+  setTimeout(() => {
+    const food = visibleFoods[Math.floor(Math.random() * visibleFoods.length)];
+    
+    randomFoodImage.src = food.image || "https://via.placeholder.com/400x300?text=🍲";
+    randomFoodImage.alt = food.name;
+    randomFoodName.textContent = "😋 " + food.name;
+    randomFoodCategory.textContent = "دسته بندی: " + food.category;
+    
+    loadingSpinner.style.display = "none";
+    randomFoodResult.classList.remove("hidden");
+  }, 300);
 });
 
-closeModal.addEventListener(
-"click",
-()=>{
+closeModal.addEventListener("click", () => {
+  modal.style.display = "none";
+});
 
-  modal.style.display =
-  "none";
+// ==================== EXPORT BACKUP ====================
+exportBtn.addEventListener("click", () => {
+  const exportData = foods.map(food => ({
+    name: food.name,
+    category: food.category,
+    image: food.image || "",
+    favorites: food.favorites || [],
+    exportedAt: new Date().toISOString()
+  }));
+  
+  const dataStr = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `foods-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  showToast(`💾 بکاپ گرفته شد (${exportData.length} غذا)`, "success");
+});
 
-}
-);
+// ==================== IMPORT BACKUP ====================
+importBtn.addEventListener("click", () => {
+  importModal.style.display = "flex";
+  importFile.value = "";
+});
 
-closeFavorite.addEventListener(
-"click",
-()=>{
+closeImport.addEventListener("click", () => {
+  importModal.style.display = "none";
+});
 
-  favoriteModal.style.display =
-  "none";
-
-}
-);
-
-window.addEventListener(
-"click",
-(e)=>{
-
-  if(e.target === modal){
-
-    modal.style.display =
-    "none";
-  }
-
-  if(e.target === favoriteModal){
-
-    favoriteModal.style.display =
-    "none";
+confirmImportBtn.addEventListener("click", async () => {
+  if (!importFile.files || !importFile.files[0]) {
+    showToast("لطفاً فایل بکاپ را انتخاب کنید", "error");
+    return;
   }
   
-  const editModal = document.getElementById("editModal");
-  if(e.target === editModal){
-    editModal.style.display = "none";
+  try {
+    const file = importFile.files[0];
+    const text = await file.text();
+    const importedFoods = JSON.parse(text);
+    
+    if (!Array.isArray(importedFoods)) {
+      throw new Error("فرمت فایل نامعتبر است");
+    }
+    
+    let successCount = 0;
+    for (const food of importedFoods) {
+      if (food.name && food.category) {
+        await addDoc(foodsRef, {
+          name: food.name,
+          category: food.category,
+          image: food.image || "",
+          favorites: food.favorites || []
+        });
+        successCount++;
+      }
+    }
+    
+    importModal.style.display = "none";
+    showToast(`📥 ${successCount} غذا با موفقیت بازیابی شد`, "success");
+  } catch (error) {
+    console.error("Import error:", error);
+    showToast("خطا در بازیابی فایل بکاپ", "error");
   }
+});
 
-}
-);
+// ==================== MODAL CLOSE ON OUTSIDE CLICK ====================
+window.addEventListener("click", (e) => {
+  if (e.target === modal) modal.style.display = "none";
+  if (e.target === favoriteModal) favoriteModal.style.display = "none";
+  if (e.target === importModal) importModal.style.display = "none";
+  const editModal = document.getElementById("editModal");
+  if (e.target === editModal) editModal.style.display = "none";
+});
 
-loadFoods();
+// ==================== INIT ====================
+loadColumns();
+startRealtimeSync();
