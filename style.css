@@ -35,7 +35,7 @@ body{
 
   display:flex;
 
-  justify-content:space-between;
+  justify-content:center;
 
   align-items:center;
 
@@ -58,55 +58,17 @@ body{
 
   color:white;
 
-  padding:12px 20px;
+  padding:12px 24px;
 
   border-radius:18px;
 
-  font-size:0.9rem;
-
-  font-family:inherit;
-
-  cursor:pointer;
-}
-
-.view-switcher{
-
-  display:flex;
-
-  gap:8px;
-}
-
-.view-btn{
-
-  border:none;
-
-  width:42px;
-  height:42px;
-
-  border-radius:14px;
-
-  background:white;
+  font-size:0.95rem;
 
   font-family:inherit;
 
   cursor:pointer;
 
-  font-weight:bold;
-
-  box-shadow:
-  0 4px 15px rgba(0,0,0,0.08);
-}
-
-.view-btn.active{
-
-  background:
-  linear-gradient(
-    135deg,
-    #ff9800,
-    #ff4d6d
-  );
-
-  color:white;
+  font-weight:500;
 }
 
 .container{
@@ -132,52 +94,54 @@ body{
   font-weight:800;
 }
 
-/* طراحی جدید و جمع و جور فیلترها */
+/* فیلتر بار با اسکرول افقی */
 .filter-bar {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   margin-bottom: 24px;
   backdrop-filter: blur(4px);
 }
 
-.filter-row {
+.filter-scroll-wrapper {
   display: flex;
-  flex-wrap: wrap;
   gap: 20px;
-  align-items: center;
-  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
+.filter-scroll-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filter-scroll-wrapper::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+.filter-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: #ff9800;
+  border-radius: 10px;
 }
 
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-icon {
-  font-size: 1.2rem;
-  background: white;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .chip {
   border: none;
   background: white;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 100px;
   cursor: pointer;
   font-family: inherit;
@@ -185,6 +149,7 @@ body{
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .chip.active {
@@ -270,10 +235,12 @@ body{
   display:none;
 }
 
-/* گرید با ابعاد مناسب */
+/* گرید با 2 ستون ثابت */
 .foods-grid{
 
   display:grid;
+
+  grid-template-columns:repeat(2,1fr);
 
   gap:18px;
 }
@@ -300,26 +267,26 @@ body{
 
   width:100%;
 
-  height:170px;
+  height:160px;
 
   object-fit:cover;
 }
 
 .food-image-placeholder {
   width:100%;
-  height:170px;
+  height:160px;
   background: linear-gradient(135deg, #ffe6cc, #ffcc99);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #cc7a00;
 }
 
 .food-content{
 
-  padding:16px;
+  padding:14px;
   flex:1;
   display:flex;
   flex-direction:column;
@@ -345,28 +312,39 @@ body{
 
   display:inline-block;
 
-  margin-top:10px;
+  margin-top:8px;
 
   background:#fff0da;
 
   color:#ff7b00;
 
-  padding:6px 12px;
+  padding:4px 10px;
 
   border-radius:100px;
 
-  font-size:.75rem;
+  font-size:.7rem;
 
   width:fit-content;
+}
+
+.favorite-list{
+
+  margin-top:10px;
+
+  line-height:1.4;
+
+  color:#666;
+
+  font-size:0.7rem;
 }
 
 .card-actions{
 
   display:flex;
 
-  gap:8px;
+  gap:6px;
 
-  margin-top:14px;
+  margin-top:12px;
 }
 
 .favorite-btn,
@@ -377,7 +355,7 @@ body{
 
   border:none;
 
-  padding:8px;
+  padding:8px 4px;
 
   border-radius:12px;
 
@@ -385,7 +363,11 @@ body{
 
   font-family:inherit;
 
-  font-size:0.75rem;
+  font-size:0.7rem;
+
+  font-weight:500;
+
+  white-space:nowrap;
 }
 
 .favorite-btn{
@@ -400,22 +382,12 @@ body{
   background:#ffe1e1;
 }
 
-.favorite-list{
-
-  margin-top:12px;
-
-  line-height:1.5;
-
-  color:#666;
-
-  font-size:0.75rem;
-}
-
 .empty-state {
   text-align: center;
   padding: 60px;
   color: #999;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  grid-column: span 2;
 }
 
 .modal,
@@ -444,7 +416,7 @@ body{
   background:white;
 
   width:100%;
-  max-width:420px;
+  max-width:400px;
 
   border-radius:28px;
 
@@ -475,12 +447,12 @@ body{
 
 .spinner{
 
-  width:50px;
-  height:50px;
+  width:45px;
+  height:45px;
 
-  border:5px solid #ffe0c2;
+  border:4px solid #ffe0c2;
 
-  border-top:5px solid #ff7b00;
+  border-top:4px solid #ff7b00;
 
   border-radius:50%;
 
@@ -493,7 +465,7 @@ body{
 
   width:100%;
 
-  height:200px;
+  height:190px;
 
   object-fit:cover;
 
@@ -519,13 +491,15 @@ body{
 
   background:#ffe9c7;
 
-  padding:10px 20px;
+  padding:10px 18px;
 
   border-radius:100px;
 
   font-family:inherit;
 
   cursor:pointer;
+
+  font-weight:500;
 }
 
 .edit-form {
@@ -579,35 +553,34 @@ body{
 }
 
 /* Responsive */
-@media(max-width:768px){
+@media(max-width:640px){
   .food-image, .food-image-placeholder {
     height: 130px;
   }
   
   .food-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
-  .filter-row {
-    flex-direction: column;
-    align-items: stretch;
+  .food-content {
+    padding: 10px;
   }
   
-  .filter-group {
-    justify-content: space-between;
+  .card-actions {
+    flex-wrap: wrap;
   }
   
-  .chips {
-    flex: 1;
-  }
-  
-  .view-btn {
-    width: 36px;
-    height: 36px;
+  .favorite-btn, .delete-btn, .edit-btn {
+    font-size: 0.65rem;
+    padding: 6px 2px;
   }
   
   .random-btn {
-    padding: 10px 14px;
-    font-size: 0.8rem;
+    padding: 10px 18px;
+    font-size: 0.85rem;
+  }
+  
+  .hero h1 {
+    font-size: 1.6rem;
   }
 }
