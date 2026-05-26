@@ -190,21 +190,19 @@ function showAuthLoading(show) {
 async function handleGoogleLogin() {
   try {
     showAuthLoading(true);
-    const result = await signInWithPopup(auth, new GoogleAuthProvider());
-    currentUser = result.user;
-    updateAuthUI();
-    showToast(`🔐 خوش آمدی ${currentUser.displayName || "کاربر"}`, "success");
+    // استفاده از signInWithRedirect به جای signInWithPopup
+    await signInWithRedirect(auth, new GoogleAuthProvider());
+    // صفحه دوباره بارگذاری می‌شود و getRedirectResult اجرا می‌شود
   } catch (error) {
     console.error("Login error:", error);
+    showAuthLoading(false);
     let errorMessage = "خطا در ورود";
     if (error.code === "auth/popup-blocked") {
       errorMessage = "پاپ‌آپ مسدود شده. لطفاً اجازه دهید.";
-    } else if (error.code === "auth/popup-closed-by-user") {
-      errorMessage = "پنجره ورود بسته شد.";
+    } else {
+      errorMessage = "خطا: " + error.message;
     }
     showToast(errorMessage, "error");
-  } finally {
-    showAuthLoading(false);
   }
 }
 
