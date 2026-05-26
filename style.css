@@ -93,10 +93,6 @@ body {
   50% { opacity: 0.5; }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Container */
 .container {
   width: min(1200px, 92%);
@@ -238,33 +234,37 @@ body {
   transform: scale(1.01);
 }
 
-/* Image Upload Group */
-.image-upload-group {
+/* ردیف دو ستونه برای لینک عکس و دکمه آپلود */
+.image-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
 }
 
-.image-upload-group input[type="file"] {
-  display: none;
+.image-url-input {
+  flex: 1;
 }
 
-.upload-label {
-  background: linear-gradient(135deg, #e8f0fe, #d4e4fc);
-  color: #1a73e8;
-  padding: 10px 16px;
-  border-radius: 30px;
-  text-align: center;
+.upload-image-btn {
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  font-family: inherit;
   cursor: pointer;
-  font-size: 0.85rem;
   font-weight: 500;
-  transition: all 0.2s;
-  border: 1px dashed #1a73e8;
+  transition: transform 0.2s;
+  white-space: nowrap;
 }
 
-.upload-label:hover {
-  background: #d4e4fc;
-  transform: translateY(-1px);
+.upload-image-btn:hover {
+  transform: scale(1.01);
+}
+
+.upload-image-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 /* Foods Grid */
@@ -448,7 +448,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Footer Actions */
+/* Footer Actions - NEW */
 .footer-actions {
   display: flex;
   justify-content: space-between;
@@ -678,6 +678,12 @@ body {
   animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .random-result img {
   width: 100%;
   height: 190px;
@@ -690,7 +696,7 @@ body {
   display: none;
 }
 
-/* Toast Notifications */
+/* Toast Notifications - فقط یک نوتیفیکیشن همزمان */
 .toast-container {
   position: fixed;
   bottom: 80px;
@@ -745,7 +751,7 @@ body {
   border-right: 4px solid #ff9800;
 }
 
-/* AUTH SYSTEM */
+/* AUTH SYSTEM - پنل کاربری یک ردیفه */
 .user-panel {
   display: flex;
   align-items: center;
@@ -830,6 +836,10 @@ body {
   transform: translateY(-1px);
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .food-image, .food-image-placeholder {
@@ -896,80 +906,29 @@ body {
     width: 38px;
     height: 38px;
   }
-  
-  .upload-label {
-    padding: 12px 16px;
-    font-size: 0.9rem;
-  }
-}
 
-.topbar-actions {
-  display: none;
-}
-
-.guest-message {
-  display: none;
-}
-
-/* اضافه کنید به انتهای فایل style.css */
-
-/* ردیف دوتایی برای عکس */
-.image-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.image-upload-wrapper {
-  flex: 1;
-  min-width: 0;
-}
-
-.image-upload-wrapper input[type="file"] {
-  display: none;
-}
-
-.upload-label {
-  display: block;
-  background: linear-gradient(135deg, #e8f0fe, #d4e4fc);
-  color: #1a73e8;
-  padding: 12px 12px;
-  border-radius: 16px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  border: 1px solid #1a73e8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.upload-label:hover {
-  background: #d4e4fc;
-  transform: translateY(-1px);
-}
-
-.image-url-input {
-  flex: 2;
-  min-width: 0;
-}
-
-/* برای موبایل */
-@media (max-width: 640px) {
-  .image-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .image-upload-wrapper,
-  .image-url-input {
-    width: 100%;
-  }
-  
-  .upload-label {
-    padding: 12px 12px;
+  /* استایل ریسپانسیو برای دکمه آپلود در موبایل */
+  .upload-image-btn {
+    padding: 12px 14px;
     font-size: 0.85rem;
   }
+  
+  .image-row {
+    gap: 8px;
+  }
+}
+
+.add-food-section.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.favorite-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* مخفی کردن پیام مهمان (حذف شده) */
+.guest-message {
+  display: none;
 }
