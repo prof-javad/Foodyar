@@ -218,7 +218,7 @@ body {
   border-color: #ff9800;
 }
 
-#foodForm button {
+#foodForm button[type="submit"] {
   border: none;
   padding: 12px;
   border-radius: 16px;
@@ -230,7 +230,7 @@ body {
   transition: transform 0.2s;
 }
 
-#foodForm button:hover {
+#foodForm button[type="submit"]:hover {
   transform: scale(1.01);
 }
 
@@ -239,10 +239,12 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
 .image-url-input {
   flex: 1;
+  min-width: 0; /* برای جلوگیری از سرریز در موبایل */
 }
 
 .upload-image-btn {
@@ -256,6 +258,7 @@ body {
   font-weight: 500;
   transition: transform 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .upload-image-btn:hover {
@@ -448,7 +451,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Footer Actions - NEW */
+/* Footer Actions */
 .footer-actions {
   display: flex;
   justify-content: space-between;
@@ -696,7 +699,7 @@ body {
   display: none;
 }
 
-/* Toast Notifications - فقط یک نوتیفیکیشن همزمان */
+/* Toast Notifications */
 .toast-container {
   position: fixed;
   bottom: 80px;
@@ -751,7 +754,7 @@ body {
   border-right: 4px solid #ff9800;
 }
 
-/* AUTH SYSTEM - پنل کاربری یک ردیفه */
+/* AUTH SYSTEM */
 .user-panel {
   display: flex;
   align-items: center;
@@ -907,14 +910,18 @@ body {
     height: 38px;
   }
 
-  /* استایل ریسپانسیو برای دکمه آپلود در موبایل */
+  /* استایل ریسپانسیو برای ردیف عکس در موبایل */
+  .image-row {
+    gap: 8px;
+  }
+  
   .upload-image-btn {
     padding: 12px 14px;
     font-size: 0.85rem;
   }
   
-  .image-row {
-    gap: 8px;
+  .image-url-input {
+    font-size: 0.85rem;
   }
 }
 
@@ -928,7 +935,6 @@ body {
   cursor: not-allowed;
 }
 
-/* مخفی کردن پیام مهمان (حذف شده) */
 .guest-message {
   display: none;
 }
