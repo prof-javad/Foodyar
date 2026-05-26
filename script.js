@@ -63,10 +63,67 @@ let isApprovedUser = false;
 
 // ایمیل‌های مجاز - ایمیل خود را اینجا وارد کنید
 const allowedEmails = [
-  "jjwad1817@gmail.com",
+  "jjwad1817@gmail.com",  // <--- ایمیل خود را اینجا وارد کنید
   "mom@gmail.com",
   "family@gmail.com"
 ];
+
+// ==================== تبدیل عکس به Base64 ====================
+function convertImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+// ==================== آپلود عکس (عمومی) ====================
+async function uploadImage(inputElement, buttonElement) {
+  // ایجاد input فایل با پشتیبانی از دوربین در موبایل
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.capture = "environment"; // 'user' برای دوربین سلفی، 'environment' برای دوربین پشت
+  
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // بررسی حجم فایل (حداکثر 5 مگابایت)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("حجم عکس نباید بیشتر از 5 مگابایت باشد", "error");
+      return;
+    }
+    
+    // فعال کردن حالت لودینگ روی دکمه
+    const originalText = buttonElement.innerHTML;
+    buttonElement.innerHTML = "⏳ در حال آپلود...";
+    buttonElement.disabled = true;
+    
+    try {
+      // تبدیل عکس به Base64
+      const base64 = await convertImageToBase64(file);
+      inputElement.value = base64;
+      showToast("✅ عکس با موفقیت آپلود شد", "success");
+      
+      // اگه در مودال ویرایش هستیم، پیش‌نمایش رو هم بروز کن
+      const previewImg = document.getElementById("previewImg");
+      if (previewImg && inputElement.id === "editImage") {
+        previewImg.src = base64;
+        previewImg.style.display = "block";
+      }
+    } catch (error) {
+      console.error("خطا در آپلود:", error);
+      showToast("❌ خطا در آپلود عکس", "error");
+    } finally {
+      buttonElement.innerHTML = originalText;
+      buttonElement.disabled = false;
+    }
+  };
+  
+  fileInput.click();
+}
 
 // ==================== TOAST NOTIFICATION ====================
 let currentToast = null;
@@ -244,93 +301,10 @@ function escapeHtml(str) {
   return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; });
 }
 
-// ==================== آپلود عکس از فایل (برای موبایل و دسکتاپ) ====================
-function uploadImageToTempUrl(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      reject("No file selected");
-      return;
-    }
-    
-    if (!file.type.startsWith('image/')) {
-      reject("لطفاً یک فایل تصویری انتخاب کنید");
-      return;
-    }
-    
-    if (file.size > 5 * 1024 * 1024) {
-      reject("حجم تصویر باید کمتر از 5 مگابایت باشد");
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      resolve(e.target.result);
-    };
-    reader.onerror = function() {
-      reject("خطا در خواندن فایل");
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// فقط بخش‌های مربوط به فایل‌های عکس را اصلاح کنید
-
-// برای فرم اضافه کردن خوراک (حذف capture از فیلد)
-const foodImageFile = document.getElementById("foodImageFile");
-const foodImageUrl = document.getElementById("foodImage");
-
-if (foodImageFile) {
-  // حذف attribute capture اگر وجود دارد
-  foodImageFile.removeAttribute("capture");
-  
-  foodImageFile.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const imageDataUrl = await uploadImageToTempUrl(file);
-        foodImageUrl.value = imageDataUrl;
-        showToast("✅ عکس با موفقیت انتخاب شد", "success");
-      } catch (error) {
-        showToast(error, "error");
-        foodImageFile.value = "";
-      }
-    }
-  });
-}
-
-// برای فرم ویرایش خوراک (حذف capture از فیلد)
-const editImageFile = document.getElementById("editImageFile");
-const editImageUrl = document.getElementById("editImage");
-
-if (editImageFile) {
-  // حذف attribute capture اگر وجود دارد
-  editImageFile.removeAttribute("capture");
-  
-  editImageFile.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const imageDataUrl = await uploadImageToTempUrl(file);
-        editImageUrl.value = imageDataUrl;
-        const previewImg = document.getElementById("previewImg");
-        previewImg.src = imageDataUrl;
-        previewImg.style.display = "block";
-        showToast("✅ عکس با موفقیت انتخاب شد", "success");
-      } catch (error) {
-        showToast(error, "error");
-        editImageFile.value = "";
-      }
-    }
-  });
-}
-
-// ==================== PASTE IMAGE FROM CLIPBOARD (فقط برای دسکتاپ) ====================
+// ==================== PASTE IMAGE FROM CLIPBOARD ====================
 async function getImageFromClipboard() {
-  if (!navigator.clipboard || !navigator.clipboard.read) {
-    return null;
-  }
-  
   try {
+    if (!navigator.clipboard || !navigator.clipboard.read) { showToast("مرورگر شما از چسباندن تصویر پشتیبانی نمی‌کند", "error"); return null; }
     const clipboardItems = await navigator.clipboard.read();
     for (const clipboardItem of clipboardItems) {
       const imageTypes = clipboardItem.types.filter(type => type.startsWith("image/"));
@@ -339,22 +313,41 @@ async function getImageFromClipboard() {
         if (blob) return URL.createObjectURL(blob);
       }
     }
+    showToast("تصویری در کلیپ‌بورد یافت نشد", "info");
     return null;
   } catch (err) {
-    console.log("Clipboard read not supported on this device/browser");
+    console.error("Clipboard read failed:", err);
+    if (err.name === "NotAllowedError") showToast("لطفاً ابتدا روی صفحه کلیک کنید سپس دوباره تلاش کنید", "error");
+    else showToast("خطا در خواندن کلیپ‌بورد", "error");
     return null;
   }
 }
 
 const foodImageInput = document.getElementById("foodImage");
-if (foodImageInput && navigator.clipboard && navigator.clipboard.read) {
+if (foodImageInput) {
   foodImageInput.addEventListener("paste", async (e) => {
     e.preventDefault();
     const imageUrl = await getImageFromClipboard();
-    if (imageUrl) {
-      foodImageInput.value = imageUrl;
-      showToast("تصویر از کلیپ‌بورد چسبانده شد", "success");
-    }
+    if (imageUrl) { foodImageInput.value = imageUrl; showToast("تصویر از کلیپ‌بورد چسبانده شد", "success"); }
+  });
+}
+
+// ==================== دکمه آپلود عکس ====================
+const uploadImageBtn = document.getElementById("uploadImageBtn");
+if (uploadImageBtn) {
+  uploadImageBtn.addEventListener("click", () => {
+    if (!isApprovedUser) { showToast("فقط اعضای خانواده می‌توانند عکس آپلود کنند", "error"); return; }
+    uploadImage(foodImageInput, uploadImageBtn);
+  });
+}
+
+// دکمه آپلود در مودال ویرایش
+const uploadEditImageBtn = document.getElementById("uploadEditImageBtn");
+const editImageInput = document.getElementById("editImage");
+if (uploadEditImageBtn && editImageInput) {
+  uploadEditImageBtn.addEventListener("click", () => {
+    if (!isApprovedUser) { showToast("فقط اعضای خانواده می‌توانند عکس آپلود کنند", "error"); return; }
+    uploadImage(editImageInput, uploadEditImageBtn);
   });
 }
 
@@ -371,7 +364,6 @@ if (foodForm) {
     try {
       await addDoc(foodsRef, { name, image: image || "", category, favorites: [] });
       foodForm.reset();
-      if (foodImageFile) foodImageFile.value = "";
       showToast("✅ خوراک اضافه شد", "success");
     } catch (error) { console.error("Error adding food:", error); showToast("خطا در اضافه کردن خوراک", "error"); }
   });
@@ -398,7 +390,6 @@ window.openEditModal = function(id) {
   const previewImg = document.getElementById("previewImg");
   if (food.image) { previewImg.src = food.image; previewImg.style.display = "block"; } 
   else { previewImg.style.display = "none"; }
-  if (editImageFile) editImageFile.value = "";
   document.getElementById("editModal").style.display = "flex";
 };
 
@@ -408,19 +399,17 @@ document.getElementById("editImage")?.addEventListener("input", (e) => {
   else { previewImg.style.display = "none"; }
 });
 
-if (document.getElementById("editImage") && navigator.clipboard && navigator.clipboard.read) {
-  document.getElementById("editImage").addEventListener("paste", async (e) => {
-    e.preventDefault();
-    const imageUrl = await getImageFromClipboard();
-    if (imageUrl) {
-      document.getElementById("editImage").value = imageUrl;
-      const previewImg = document.getElementById("previewImg");
-      previewImg.src = imageUrl;
-      previewImg.style.display = "block";
-      showToast("تصویر از کلیپ‌بورد چسبانده شد", "success");
-    }
-  });
-}
+document.getElementById("editImage")?.addEventListener("paste", async (e) => {
+  e.preventDefault();
+  const imageUrl = await getImageFromClipboard();
+  if (imageUrl) {
+    document.getElementById("editImage").value = imageUrl;
+    const previewImg = document.getElementById("previewImg");
+    previewImg.src = imageUrl;
+    previewImg.style.display = "block";
+    showToast("تصویر از کلیپ‌بورد چسبانده شد", "success");
+  }
+});
 
 document.getElementById("saveEditBtn")?.addEventListener("click", async () => {
   if (!isApprovedUser) { showToast("فقط اعضای خانواده می‌توانند ویرایش کنند", "error"); return; }
@@ -578,14 +567,17 @@ async function logoutUser() {
 }
 
 function updateAccessUI() {
+  // کنترل دکمه‌های موجود در کارت‌ها
   document.querySelectorAll(".edit-btn, .delete-btn, .favorite-btn").forEach(el => {
     if (!isApprovedUser) { el.classList.add("hidden"); if (el.classList.contains("favorite-btn")) el.disabled = true; } 
     else { el.classList.remove("hidden"); if (el.classList.contains("favorite-btn")) el.disabled = false; }
   });
   
+  // کنترل فرم افزودن خوراک
   const form = document.getElementById("foodForm");
   if (form) { form.style.display = isApprovedUser ? "grid" : "none"; }
   
+  // کنترل کل بخش افزودن خوراک
   const addSection = document.querySelector(".add-food-section");
   if (addSection) {
     if (isApprovedUser) { addSection.style.opacity = "1"; addSection.style.pointerEvents = "auto"; } 
@@ -601,6 +593,7 @@ onAuthStateChanged(auth, (user) => {
     isApprovedUser = allowedEmails.includes(user.email);
     console.log("Is approved user:", isApprovedUser);
     console.log("User email:", user.email);
+    console.log("Allowed emails:", allowedEmails);
     
     userName.textContent = user.displayName || "عضو خانواده";
     if (user.photoURL) userAvatar.src = user.photoURL;
