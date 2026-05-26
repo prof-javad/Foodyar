@@ -150,12 +150,14 @@
       </div>
       <input type="text" id="editName" placeholder="اسم خوراک" />
       
-      <div class="image-upload-group">
-        <input type="file" id="editImageFile" accept="image/*" capture="environment" />
-        <label for="editImageFile" class="upload-label">📸 انتخاب عکس از گالری یا دوربین</label>
+      <div class="image-row">
+        <div class="image-upload-wrapper">
+          <input type="file" id="editImageFile" accept="image/*" />
+          <label for="editImageFile" class="upload-label">📸 انتخاب عکس</label>
+        </div>
+        <input type="url" id="editImage" placeholder="لینک عکس (اختیاری)" class="image-url-input" />
       </div>
       
-      <input type="url" id="editImage" placeholder="یا لینک عکس (اختیاری)" />
       <select id="editCategory">
         <option value="ایرانی">ایرانی</option>
         <option value="خارجی">خارجی</option>
