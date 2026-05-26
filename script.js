@@ -1,680 +1,691 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-
-  --primary: #ff8a00;
-  --secondary: #ff4d6d;
-  --light: #fff7f0;
-  --text: #3a2e2e;
-
-  --shadow: 0 10px 25px rgba(0,0,0,0.08);
-
-}
-
-body {
-
-  font-family: 'Vazirmatn', sans-serif;
-
-  background:
-    linear-gradient(
-      to bottom,
-      #fff8ef,
-      #fff2f2
-    );
-
-  color: var(--text);
-
-  min-height: 100vh;
-
-}
-
-.topbar {
-
-  position: sticky;
-
-  top: 0;
-
-  z-index: 1000;
-
-  background: rgba(255,255,255,0.9);
-
-  backdrop-filter: blur(12px);
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  padding: 14px 18px;
-
-  box-shadow: var(--shadow);
-
-}
-
-.random-btn {
-
-  border: none;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--primary),
-      var(--secondary)
-    );
-
-  color: white;
-
-  padding: 15px 20px;
-
-  border-radius: 18px;
-
-  font-size: 1rem;
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  transition: 0.3s;
-
-  box-shadow: var(--shadow);
-
-}
-
-.random-btn:hover {
-
-  transform: translateY(-2px);
-
-}
-
-.view-switcher {
-
-  display: flex;
-
-  gap: 8px;
-
-}
-
-.view-btn {
-
-  border: none;
-
-  width: 44px;
-  height: 44px;
-
-  border-radius: 14px;
-
-  background: white;
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  box-shadow: var(--shadow);
-
-  transition: 0.3s;
-
-}
-
-.view-btn.active {
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--primary),
-      var(--secondary)
-    );
-
-  color: white;
-
-}
-
-.container {
-
-  width: min(1200px, 92%);
-
-  margin: auto;
-
-  padding-bottom: 60px;
-
-}
-
-.hero {
-
-  text-align: center;
-
-  padding: 20px 10px 15px;
-
-}
-
-.hero h1 {
-
-  font-size: 2rem;
-
-  font-weight: 800;
-
-}
-
-.favorite-filter {
-
-  margin-bottom: 20px;
-
-}
-
-.favorite-filter h3 {
-
-  margin-bottom: 14px;
-
-}
-
-.favorite-filter-buttons {
-
-  display: flex;
-
-  gap: 10px;
-
-  flex-wrap: wrap;
-
-}
-
-.favorite-filter-btn {
-
-  border: none;
-
-  background: white;
-
-  padding: 12px 16px;
-
-  border-radius: 100px;
-
-  cursor: pointer;
-
-  font-family: inherit;
-
-  box-shadow: var(--shadow);
-
-}
-
-.favorite-filter-btn.active {
-
-  background:
-    linear-gradient(
-      135deg,
-      #ff7b00,
-      #ff4d6d
-    );
-
-  color: white;
-
-}
-
-.categories {
-
-  display: flex;
-
-  gap: 10px;
-
-  overflow-x: auto;
-
-  padding-bottom: 10px;
-
-  margin-bottom: 25px;
-
-}
-
-.category-btn {
-
-  border: none;
-
-  background: white;
-
-  padding: 12px 18px;
-
-  border-radius: 100px;
-
-  cursor: pointer;
-
-  font-family: inherit;
-
-  white-space: nowrap;
-
-  box-shadow: var(--shadow);
-
-}
-
-.category-btn.active {
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--primary),
-      var(--secondary)
-    );
-
-  color: white;
-
-}
-
-.add-food-section {
-
-  background: white;
-
-  padding: 24px;
-
-  border-radius: 28px;
-
-  box-shadow: var(--shadow);
-
-  margin-bottom: 35px;
-
-}
-
-.add-food-section h2 {
-
-  margin-bottom: 20px;
-
-}
-
-#foodForm {
-
-  display: grid;
-
-  gap: 14px;
-
-}
-
-#foodForm input,
-#foodForm select {
-
-  border: 2px solid #f1f1f1;
-
-  padding: 15px;
-
-  border-radius: 16px;
-
-  font-family: inherit;
-
-  font-size: 1rem;
-
-}
-
-#foodForm button {
-
-  border: none;
-
-  padding: 15px;
-
-  border-radius: 16px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffb703,
-      #fb8500
-    );
-
-  color: white;
-
-  font-size: 1rem;
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-}
-
-.success-message {
-
-  margin-top: 16px;
-
-  background: #d8fdd8;
-
-  color: #157515;
-
-  padding: 14px;
-
-  border-radius: 14px;
-
-  display: none;
-
-}
-
-.foods-grid {
-
-  display: grid;
-
-  gap: 18px;
-
-}
-
-.food-card {
-
-  background: white;
-
-  border-radius: 28px;
-
-  overflow: hidden;
-
-  box-shadow: var(--shadow);
-
-  transition: 0.35s;
-
-  animation: fadeIn 0.5s ease;
-
-}
-
-.food-card:hover {
-
-  transform: translateY(-4px);
-
-}
-
-.food-image {
-
-  width: 100%;
-
-  height: 200px;
-
-  object-fit: cover;
-
-}
-
-.food-content {
-
-  padding: 18px;
-
-}
-
-.food-header {
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-}
-
-.food-title {
-
-  font-size: 1.2rem;
-
-  font-weight: 700;
-
-}
-
-.category-tag {
-
-  display: inline-block;
-
-  margin-top: 12px;
-
-  background: #fff0d6;
-
-  color: #ff8a00;
-
-  padding: 8px 14px;
-
-  border-radius: 100px;
-
-  font-size: 0.9rem;
-
-}
-
-.card-actions {
-
-  display: flex;
-
-  gap: 8px;
-
-  margin-top: 18px;
-
-}
-
-.favorite-btn,
-.delete-btn,
-.edit-btn {
-
-  flex: 1;
-
-  border: none;
-
-  padding: 11px;
-
-  border-radius: 14px;
-
-  cursor: pointer;
-
-  font-family: inherit;
-
-  transition: 0.3s;
-
-}
-
-.favorite-btn {
-
-  background: #fff4c2;
-
-}
-
-.delete-btn {
-
-  background: #ffe2e2;
-
-}
-
-.edit-btn {
-
-  background: #dff4ff;
-
-}
-
-.favorite-list {
-
-  margin-top: 14px;
-
-  line-height: 1.9;
-
-  color: #666;
-
-}
-
-.modal,
-.favorite-modal {
-
-  position: fixed;
-
-  inset: 0;
-
-  background: rgba(0,0,0,0.45);
-
-  display: none;
-
-  justify-content: center;
-
-  align-items: center;
-
-  z-index: 3000;
-
-  padding: 20px;
-
-}
-
-.modal-content,
-.favorite-content {
-
-  background: white;
-
-  width: 100%;
-  max-width: 420px;
-
-  border-radius: 28px;
-
-  padding: 24px;
-
-  position: relative;
-
-}
-
-.close-modal,
-.close-favorite {
-
-  position: absolute;
-
-  top: 15px;
-  left: 18px;
-
-  font-size: 1.7rem;
-
-  cursor: pointer;
-
-}
-
-.random-result img {
-
-  width: 100%;
-
-  height: 240px;
-
-  object-fit: cover;
-
-  border-radius: 20px;
-
-  margin-bottom: 18px;
-
-}
-
-.spinner-container {
-
-  text-align: center;
-
-  padding: 40px 0;
-
-}
-
-.spinner {
-
-  width: 60px;
-  height: 60px;
-
-  border: 6px solid #ffe1c2;
-
-  border-top: 6px solid #ff7b00;
-
-  border-radius: 50%;
-
-  margin: auto;
-
-  animation: spin 1s linear infinite;
-
-}
-
-.members-list {
-
-  display: flex;
-
-  gap: 10px;
-
-  flex-wrap: wrap;
-
-  margin: 20px 0;
-
-}
-
-.member-btn {
-
-  border: none;
-
-  background: #ffe9c7;
-
-  padding: 12px 16px;
-
-  border-radius: 100px;
-
-  cursor: pointer;
-
-  font-family: inherit;
-
-}
-
-.custom-member {
-
-  display: flex;
-
-  gap: 10px;
-
-}
-
-.custom-member input {
-
-  flex: 1;
-
-  border: 2px solid #eee;
-
-  border-radius: 14px;
-
-  padding: 12px;
-
-  font-family: inherit;
-
-}
-
-.custom-member button {
-
-  border: none;
-
-  background: var(--secondary);
-
-  color: white;
-
-  border-radius: 14px;
-
-  padding: 12px 18px;
-
-  cursor: pointer;
-
-  font-family: inherit;
-
-}
-
-.hidden {
-
-  display: none;
-
-}
-
-@keyframes spin {
-
-  to {
-    transform: rotate(360deg);
-  }
-
-}
-
-@keyframes fadeIn {
-
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-}
-
-@media(max-width:768px) {
-
-  .food-image {
-
-    height: 150px;
+const foodsContainer =
+  document.getElementById("foodsContainer");
+
+const foodForm =
+  document.getElementById("foodForm");
+
+const successMessage =
+  document.getElementById("successMessage");
+
+const categoryButtons =
+  document.querySelectorAll(".category-btn");
+
+const favoriteFilterButtons =
+  document.querySelectorAll(".favorite-filter-btn");
+
+const viewButtons =
+  document.querySelectorAll(".view-btn");
+
+const randomBtn =
+  document.getElementById("randomBtn");
+
+const modal =
+  document.getElementById("randomModal");
+
+const closeModal =
+  document.querySelector(".close-modal");
+
+const loadingSpinner =
+  document.getElementById("loadingSpinner");
+
+const randomFoodResult =
+  document.getElementById("randomFoodResult");
+
+const randomFoodImage =
+  document.getElementById("randomFoodImage");
+
+const randomFoodName =
+  document.getElementById("randomFoodName");
+
+const randomFoodCategory =
+  document.getElementById("randomFoodCategory");
+
+const favoriteModal =
+  document.getElementById("favoriteModal");
+
+const closeFavorite =
+  document.querySelector(".close-favorite");
+
+const saveCustomName =
+  document.getElementById("saveCustomName");
+
+let selectedFoodId = null;
+
+let currentCategory = "همه";
+
+let selectedFavoriteFilters = [];
+
+const defaultFoods = [
+
+  {
+    id: 1,
+    name: "قورمه سبزی",
+    category: "ایرانی",
+    image:
+      "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["مامان"],
+  },
+
+  {
+    id: 2,
+    name: "قیمه",
+    category: "ایرانی",
+    image:
+      "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["جواد"],
+  },
+
+  {
+    id: 3,
+    name: "ماکارونی",
+    category: "خارجی",
+    image:
+      "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["مامان", "الهه"],
+  },
+
+  {
+    id: 4,
+    name: "لازانیا",
+    category: "خارجی",
+    image:
+      "https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["الهه"],
+  },
+
+  {
+    id: 5,
+    name: "کتلت",
+    category: "ایرانی",
+    image:
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["مامان", "جواد"],
+  },
+
+  {
+    id: 6,
+    name: "پنکیک",
+    category: "صبحانه",
+    image:
+      "https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["الهه"],
+  },
+
+  {
+    id: 7,
+    name: "سالاد سزار",
+    category: "رژیمی",
+    image:
+      "https://images.unsplash.com/photo-1546793665-c74683f339c1?q=80&w=1200&auto=format&fit=crop",
+    favorites: ["مامان"],
+  },
+
+];
+
+function getFoods() {
+
+  const storedFoods =
+    localStorage.getItem("foods");
+
+  if (storedFoods) {
+
+    return JSON.parse(storedFoods);
 
   }
 
+  localStorage.setItem(
+    "foods",
+    JSON.stringify(defaultFoods)
+  );
+
+  return defaultFoods;
+
 }
+
+let foods = getFoods();
+
+function saveFoods() {
+
+  localStorage.setItem(
+    "foods",
+    JSON.stringify(foods)
+  );
+
+}
+
+function setColumns(count) {
+
+  foodsContainer.style.gridTemplateColumns =
+    `repeat(${count}, 1fr)`;
+
+  localStorage.setItem(
+    "foodColumns",
+    count
+  );
+
+}
+
+function loadColumns() {
+
+  const savedColumns =
+    localStorage.getItem("foodColumns") || 2;
+
+  setColumns(savedColumns);
+
+  viewButtons.forEach((btn) => {
+
+    btn.classList.remove("active");
+
+    if (
+      btn.dataset.cols == savedColumns
+    ) {
+      btn.classList.add("active");
+    }
+
+  });
+
+}
+
+viewButtons.forEach((btn) => {
+
+  btn.addEventListener("click", () => {
+
+    viewButtons.forEach((b) =>
+      b.classList.remove("active")
+    );
+
+    btn.classList.add("active");
+
+    setColumns(btn.dataset.cols);
+
+  });
+
+});
+
+function renderFoods() {
+
+  foodsContainer.innerHTML = "";
+
+  let filteredFoods = [...foods];
+
+  if (currentCategory !== "همه") {
+
+    filteredFoods =
+      filteredFoods.filter(
+        (food) =>
+          food.category === currentCategory
+      );
+
+  }
+
+  if (
+    selectedFavoriteFilters.length > 0
+  ) {
+
+    filteredFoods =
+      filteredFoods.filter((food) => {
+
+        return selectedFavoriteFilters.every(
+          (person) =>
+            food.favorites.includes(person)
+        );
+
+      });
+
+  }
+
+  if (filteredFoods.length === 0) {
+
+    foodsContainer.innerHTML = `
+      <div style="padding:40px;text-align:center;">
+        😢 غذایی پیدا نشد
+      </div>
+    `;
+
+    return;
+
+  }
+
+  filteredFoods.forEach((food) => {
+
+    const card =
+      document.createElement("div");
+
+    card.className = "food-card";
+
+    card.innerHTML = `
+
+      <img
+        class="food-image"
+        src="${food.image}"
+        alt="${food.name}"
+      >
+
+      <div class="food-content">
+
+        <div class="food-header">
+
+          <h3 class="food-title">
+            ${food.name}
+          </h3>
+
+          <span>🍴</span>
+
+        </div>
+
+        <div class="category-tag">
+          ${food.category}
+        </div>
+
+        <div class="card-actions">
+
+          <button
+            class="favorite-btn"
+            onclick="openFavoriteModal(${food.id})"
+          >
+            ⭐
+          </button>
+
+          <button
+            class="edit-btn"
+            onclick="editFood(${food.id})"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="delete-btn"
+            onclick="deleteFood(${food.id})"
+          >
+            🗑
+          </button>
+
+        </div>
+
+        <div class="favorite-list">
+
+          ${
+            food.favorites.length > 0
+              ? `❤️ ${food.favorites.join(" ، ")}`
+              : "هنوز کسی علاقه‌مند نشده 😄"
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+    foodsContainer.appendChild(card);
+
+  });
+
+}
+
+foodForm.addEventListener("submit", (e) => {
+
+  e.preventDefault();
+
+  const name =
+    document.getElementById("foodName").value;
+
+  const image =
+    document.getElementById("foodImage").value;
+
+  const category =
+    document.getElementById("foodCategory").value;
+
+  const newFood = {
+
+    id: Date.now(),
+
+    name,
+
+    image,
+
+    category,
+
+    favorites: [],
+
+  };
+
+  foods.unshift(newFood);
+
+  saveFoods();
+
+  renderFoods();
+
+  foodForm.reset();
+
+  successMessage.style.display =
+    "block";
+
+  setTimeout(() => {
+
+    successMessage.style.display =
+      "none";
+
+  }, 2500);
+
+});
+
+function deleteFood(id) {
+
+  const confirmDelete =
+    confirm("حذف شود؟");
+
+  if (!confirmDelete) return;
+
+  foods =
+    foods.filter(
+      (food) => food.id !== id
+    );
+
+  saveFoods();
+
+  renderFoods();
+
+}
+
+function editFood(id) {
+
+  const food =
+    foods.find((f) => f.id === id);
+
+  if (!food) return;
+
+  const newName =
+    prompt(
+      "اسم جدید غذا:",
+      food.name
+    );
+
+  if (!newName) return;
+
+  const newImage =
+    prompt(
+      "عکس جدید:",
+      food.image
+    );
+
+  if (!newImage) return;
+
+  const newCategory =
+    prompt(
+      "دسته بندی:",
+      food.category
+    );
+
+  if (!newCategory) return;
+
+  food.name = newName;
+
+  food.image = newImage;
+
+  food.category = newCategory;
+
+  saveFoods();
+
+  renderFoods();
+
+}
+
+categoryButtons.forEach((button) => {
+
+  button.addEventListener("click", () => {
+
+    categoryButtons.forEach((btn) =>
+      btn.classList.remove("active")
+    );
+
+    button.classList.add("active");
+
+    currentCategory =
+      button.dataset.category;
+
+    renderFoods();
+
+  });
+
+});
+
+favoriteFilterButtons.forEach((button) => {
+
+  button.addEventListener("click", () => {
+
+    const name =
+      button.dataset.name;
+
+    if (name === "همه") {
+
+      selectedFavoriteFilters = [];
+
+      favoriteFilterButtons.forEach((b) =>
+        b.classList.remove("active")
+      );
+
+      button.classList.add("active");
+
+      renderFoods();
+
+      return;
+
+    }
+
+    document
+      .querySelector(
+        '[data-name="همه"]'
+      )
+      .classList.remove("active");
+
+    button.classList.toggle("active");
+
+    if (
+      selectedFavoriteFilters.includes(name)
+    ) {
+
+      selectedFavoriteFilters =
+        selectedFavoriteFilters.filter(
+          (n) => n !== name
+        );
+
+    } else {
+
+      selectedFavoriteFilters.push(name);
+
+    }
+
+    if (
+      selectedFavoriteFilters.length === 0
+    ) {
+
+      document
+        .querySelector(
+          '[data-name="همه"]'
+        )
+        .classList.add("active");
+
+    }
+
+    renderFoods();
+
+  });
+
+});
+
+randomBtn.addEventListener("click", () => {
+
+  let visibleFoods =
+    [...foods];
+
+  if (currentCategory !== "همه") {
+
+    visibleFoods =
+      visibleFoods.filter(
+        (food) =>
+          food.category === currentCategory
+      );
+
+  }
+
+  if (
+    selectedFavoriteFilters.length > 0
+  ) {
+
+    visibleFoods =
+      visibleFoods.filter((food) => {
+
+        return selectedFavoriteFilters.every(
+          (person) =>
+            food.favorites.includes(person)
+        );
+
+      });
+
+  }
+
+  if (visibleFoods.length === 0) {
+
+    alert("غذایی پیدا نشد 😢");
+
+    return;
+
+  }
+
+  modal.style.display = "flex";
+
+  loadingSpinner.style.display =
+    "block";
+
+  randomFoodResult.classList.add(
+    "hidden"
+  );
+
+  setTimeout(() => {
+
+    const randomFood =
+      visibleFoods[
+        Math.floor(
+          Math.random() *
+          visibleFoods.length
+        )
+      ];
+
+    randomFoodImage.src =
+      randomFood.image;
+
+    randomFoodName.textContent =
+      `😋 ${randomFood.name}`;
+
+    randomFoodCategory.textContent =
+      `دسته بندی: ${randomFood.category}`;
+
+    loadingSpinner.style.display =
+      "none";
+
+    randomFoodResult.classList.remove(
+      "hidden"
+    );
+
+  }, 1800);
+
+});
+
+closeModal.addEventListener("click", () => {
+
+  modal.style.display = "none";
+
+});
+
+window.addEventListener("click", (e) => {
+
+  if (e.target === modal) {
+
+    modal.style.display = "none";
+
+  }
+
+  if (e.target === favoriteModal) {
+
+    favoriteModal.style.display =
+      "none";
+
+  }
+
+});
+
+function openFavoriteModal(id) {
+
+  selectedFoodId = id;
+
+  favoriteModal.style.display =
+    "flex";
+
+}
+
+closeFavorite.addEventListener("click", () => {
+
+  favoriteModal.style.display =
+    "none";
+
+});
+
+document
+  .querySelectorAll(".member-btn")
+  .forEach((btn) => {
+
+    btn.addEventListener("click", () => {
+
+      addFavorite(btn.textContent);
+
+    });
+
+  });
+
+saveCustomName.addEventListener("click", () => {
+
+  const customName =
+    document
+      .getElementById("customName")
+      .value
+      .trim();
+
+  if (!customName) return;
+
+  addFavorite(customName);
+
+  document.getElementById(
+    "customName"
+  ).value = "";
+
+});
+
+function addFavorite(name) {
+
+  const food =
+    foods.find(
+      (f) => f.id === selectedFoodId
+    );
+
+  if (!food) return;
+
+  if (
+    !food.favorites.includes(name)
+  ) {
+
+    food.favorites.push(name);
+
+  }
+
+  saveFoods();
+
+  renderFoods();
+
+  favoriteModal.style.display =
+    "none";
+
+}
+
+loadColumns();
+
+renderFoods();
