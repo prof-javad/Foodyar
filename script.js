@@ -79,6 +79,9 @@ let currentCategory = "همه";
 
 let selectedFavoriteFilters = [];
 
+// تنظیمات اعضای مجاز برای علاقه‌مندی
+const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
+
 async function loadFoods(){
 
   foods = [];
@@ -106,6 +109,7 @@ async function loadFoods(){
   }
 
   renderFoods();
+  updateFavoriteFilterButtons();
 }
 
 async function seedFoods(){
@@ -120,7 +124,7 @@ async function seedFoods(){
 
       image:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200&auto=format&fit=crop",
 
-      favorites:["مامان"]
+      favorites:[]
 
     },
 
@@ -132,7 +136,7 @@ async function seedFoods(){
 
       image:"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
 
-      favorites:["جواد"]
+      favorites:[]
 
     },
 
@@ -144,7 +148,7 @@ async function seedFoods(){
 
       image:"https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=1200&auto=format&fit=crop",
 
-      favorites:["الهه"]
+      favorites:[]
 
     },
 
@@ -173,6 +177,67 @@ async function seedFoods(){
   loadFoods();
 }
 
+// بروزرسانی دکمه‌های فیلتر علاقه‌مندی بر اساس غذاهای موجود
+function updateFavoriteFilterButtons() {
+  // جمع‌آوری تمام افرادی که حداقل یک غذا به اونها علاقه دارد
+  const allFavoritePeople = new Set();
+  
+  foods.forEach(food => {
+    if (food.favorites && Array.isArray(food.favorites)) {
+      food.favorites.forEach(person => {
+        if (ALLOWED_MEMBERS.includes(person)) {
+          allFavoritePeople.add(person);
+        }
+      });
+    }
+  });
+  
+  // نمایش دکمه‌های فیلتر فقط برای افرادی که در غذاها وجود دارند
+  const filterContainer = document.querySelector(".favorite-filter-buttons");
+  if (!filterContainer) return;
+  
+  // حفظ دکمه "همه"
+  let newHtml = `<button class="chip favorite-filter-btn active" data-name="همه">همه</button>`;
+  
+  // اضافه کردن دکمه فقط برای اعضایی که در غذاها وجود دارند
+  ALLOWED_MEMBERS.forEach(member => {
+    if (allFavoritePeople.has(member)) {
+      newHtml += `<button class="chip favorite-filter-btn" data-name="${member}">${member}</button>`;
+    }
+  });
+  
+  filterContainer.innerHTML = newHtml;
+  
+  // ریلود event listenerها
+  const newButtons = document.querySelectorAll(".favorite-filter-btn");
+  newButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const name = button.dataset.name;
+      
+      if (name === "همه") {
+        selectedFavoriteFilters = [];
+        document.querySelectorAll(".favorite-filter-btn").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+        renderFoods();
+        return;
+      }
+      
+      const allButton = document.querySelector('[data-name="همه"]');
+      if (allButton) allButton.classList.remove("active");
+      
+      if (selectedFavoriteFilters.includes(name)) {
+        selectedFavoriteFilters = selectedFavoriteFilters.filter(n => n !== name);
+        button.classList.remove("active");
+      } else {
+        selectedFavoriteFilters.push(name);
+        button.classList.add("active");
+      }
+      
+      renderFoods();
+    });
+  });
+}
+
 function renderFoods(){
 
   foodsContainer.innerHTML = "";
@@ -194,16 +259,21 @@ function renderFoods(){
 
     filteredFoods =
     filteredFoods.filter((food)=>{
-
+      
+      if (!food.favorites || !Array.isArray(food.favorites)) return false;
+      
+      // بررسی می‌کنیم که آیا غذا به همه افراد انتخاب شده علاقه دارد
       return selectedFavoriteFilters.every(
-
-        (person)=>
-        food.favorites.includes(person)
-
+        (person) => food.favorites.includes(person)
       );
 
     });
 
+  }
+
+  if (filteredFoods.length === 0) {
+    foodsContainer.innerHTML = `<div class="empty-state">🍽️ غذایی یافت نشد</div>`;
+    return;
   }
 
   filteredFoods.forEach((food)=>{
@@ -215,10 +285,7 @@ function renderFoods(){
 
     card.innerHTML = `
 
-      <img
-        class="food-image"
-        src="${food.image}"
-      >
+      ${food.image ? `<img class="food-image" src="${food.image}" alt="${food.name}">` : `<div class="food-image-placeholder">🍲 ${food.name}</div>`}
 
       <div class="food-content">
 
@@ -242,21 +309,21 @@ function renderFoods(){
             class="favorite-btn"
             onclick="openFavoriteModal('${food.firebaseId}')"
           >
-            ⭐
+            ⭐ علاقه‌مندان
           </button>
 
           <button
             class="edit-btn"
-            onclick="editFood('${food.firebaseId}')"
+            onclick="openEditModal('${food.firebaseId}')"
           >
-            ✏️
+            ✏️ ویرایش
           </button>
 
           <button
             class="delete-btn"
             onclick="deleteFood('${food.firebaseId}')"
           >
-            🗑
+            🗑 حذف
           </button>
 
         </div>
@@ -264,7 +331,7 @@ function renderFoods(){
         <div class="favorite-list">
 
           ${
-            food.favorites.length
+            food.favorites && food.favorites.length
             ?
             "❤️ " + food.favorites.join(" ، ")
             :
@@ -304,7 +371,7 @@ async(e)=>{
 
       name,
 
-      image,
+      image: image || "",
 
       category,
 
@@ -332,86 +399,81 @@ async(e)=>{
 window.deleteFood =
 async function(id){
 
-  await deleteDoc(
-    doc(db,"foods",id)
-  );
-
-  loadFoods();
+  if (confirm("آیا از حذف این غذا مطمئن هستید؟")) {
+    await deleteDoc(
+      doc(db,"foods",id)
+    );
+    loadFoods();
+  }
 };
 
-window.editFood =
-async function(id){
+// مدال ویرایش جدید
+window.openEditModal = function(id) {
+  const food = foods.find(f => f.firebaseId === id);
+  if (!food) return;
+  
+  selectedFoodId = id;
+  
+  const editModal = document.getElementById("editModal");
+  document.getElementById("editName").value = food.name;
+  document.getElementById("editImage").value = food.image || "";
+  document.getElementById("editCategory").value = food.category;
+  
+  editModal.style.display = "flex";
+};
 
-  const food =
-  foods.find(
-    (f)=>f.firebaseId === id
-  );
-
-  const newName =
-  prompt(
-    "اسم جدید غذا:",
-    food.name
-  );
-
-  if(!newName) return;
-
-  const newImage =
-  prompt(
-    "عکس جدید:",
-    food.image
-  );
-
-  if(!newImage) return;
-
-  const newCategory =
-  prompt(
-    "دسته بندی:",
-    food.category
-  );
-
-  if(!newCategory) return;
-
+document.getElementById("saveEditBtn")?.addEventListener("click", async () => {
+  const newName = document.getElementById("editName").value.trim();
+  const newImage = document.getElementById("editImage").value.trim();
+  const newCategory = document.getElementById("editCategory").value;
+  
+  if (!newName) {
+    alert("لطفاً اسم غذا را وارد کنید");
+    return;
+  }
+  
   await updateDoc(
-
-    doc(db,"foods",id),
-
+    doc(db, "foods", selectedFoodId),
     {
-
-      name:newName,
-
-      image:newImage,
-
-      category:newCategory
-
+      name: newName,
+      image: newImage,
+      category: newCategory
     }
-
   );
-
+  
+  document.getElementById("editModal").style.display = "none";
   loadFoods();
-};
+});
+
+document.getElementById("closeEdit")?.addEventListener("click", () => {
+  document.getElementById("editModal").style.display = "none";
+});
 
 window.openFavoriteModal =
 function(id){
 
   selectedFoodId = id;
-
+  
+  // بروزرسانی لیست دکمه‌های علاقه‌مندی در مدال
+  const membersList = document.querySelector(".members-list");
+  if (membersList) {
+    membersList.innerHTML = ALLOWED_MEMBERS.map(member => 
+      `<button class="member-btn" data-member="${member}">${member}</button>`
+    ).join('');
+    
+    // اضافه کردن event listener برای دکمه‌های جدید
+    document.querySelectorAll(".member-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        addFavorite(btn.dataset.member);
+      });
+    });
+  }
+  
   favoriteModal.style.display =
   "flex";
 };
 
-document
-.querySelectorAll(".member-btn")
-.forEach((btn)=>{
-
-  btn.addEventListener("click",()=>{
-
-    addFavorite(btn.textContent);
-
-  });
-
-});
-
-saveCustomName.addEventListener(
+saveCustomName?.addEventListener(
 "click",
 ()=>{
 
@@ -422,9 +484,15 @@ saveCustomName.addEventListener(
   .trim();
 
   if(!name) return;
+  
+  // فقط اعضای مجاز می‌توانند اضافه شوند
+  if (!ALLOWED_MEMBERS.includes(name)) {
+    alert("فقط مامان، الهه و جواد می‌توانند علاقه‌مند شوند!");
+    return;
+  }
 
   addFavorite(name);
-
+  document.getElementById("customName").value = "";
 }
 );
 
@@ -439,11 +507,15 @@ async function addFavorite(name){
   if(!food) return;
 
   const favorites =
-  [...food.favorites];
+  [...(food.favorites || [])];
 
   if(!favorites.includes(name)){
 
     favorites.push(name);
+  } else {
+    // اگر قبلاً علاقه داشته، حذفش کن (toggle)
+    const index = favorites.indexOf(name);
+    favorites.splice(index, 1);
   }
 
   await updateDoc(
@@ -486,57 +558,6 @@ categoryButtons.forEach((button)=>{
 
 });
 
-favoriteFilterButtons.forEach((button)=>{
-
-  button.addEventListener("click",()=>{
-
-    const name =
-    button.dataset.name;
-
-    if(name === "همه"){
-
-      selectedFavoriteFilters = [];
-
-      favoriteFilterButtons.forEach(
-        (b)=>
-        b.classList.remove("active")
-      );
-
-      button.classList.add("active");
-
-      renderFoods();
-
-      return;
-    }
-
-    document
-    .querySelector(
-      '[data-name="همه"]'
-    )
-    .classList.remove("active");
-
-    button.classList.toggle("active");
-
-    if(
-      selectedFavoriteFilters.includes(name)
-    ){
-
-      selectedFavoriteFilters =
-      selectedFavoriteFilters.filter(
-        (n)=>n !== name
-      );
-
-    }else{
-
-      selectedFavoriteFilters.push(name);
-    }
-
-    renderFoods();
-
-  });
-
-});
-
 viewButtons.forEach((btn)=>{
 
   btn.addEventListener("click",()=>{
@@ -552,7 +573,7 @@ viewButtons.forEach((btn)=>{
     btn.dataset.cols;
 
     foodsContainer.style.gridTemplateColumns =
-    `repeat(${cols},1fr)`;
+    `repeat(${cols},minmax(0,1fr))`;
 
     localStorage.setItem(
       "foodColumns",
@@ -570,7 +591,7 @@ function loadColumns(){
   || 2;
 
   foodsContainer.style.gridTemplateColumns =
-  `repeat(${cols},1fr)`;
+  `repeat(${cols},minmax(0,1fr))`;
 
 }
 
@@ -617,7 +638,7 @@ randomBtn.addEventListener("click",()=>{
     ];
 
     randomFoodImage.src =
-    food.image;
+    food.image || "https://via.placeholder.com/400x300?text=غذا";
 
     randomFoodName.textContent =
     "😋 " + food.name;
@@ -632,7 +653,7 @@ randomBtn.addEventListener("click",()=>{
       "hidden"
     );
 
-  },1800);
+  },500);
 
 });
 
@@ -670,6 +691,11 @@ window.addEventListener(
 
     favoriteModal.style.display =
     "none";
+  }
+  
+  const editModal = document.getElementById("editModal");
+  if(e.target === editModal){
+    editModal.style.display = "none";
   }
 
 }
