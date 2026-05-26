@@ -1,3 +1,14 @@
+import {
+  db,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc
+}
+from "./firebase.js";
+
 const foodsContainer =
   document.getElementById("foodsContainer");
 
