@@ -940,3 +940,127 @@ body {
 .guest-message {
   display: none;
 }
+
+/* ==================== HEADER NEW STYLES ==================== */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.random-btn {
+  border: none;
+  background: linear-gradient(135deg, #ff9800, #ff4d6d);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+
+.random-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(255, 77, 109, 0.3);
+}
+
+/* User Area - سمت چپ */
+.user-area {
+  display: flex;
+  align-items: center;
+}
+
+.guest-mode {
+  display: flex;
+  align-items: center;
+}
+
+.login-btn {
+  border: none;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.3);
+}
+
+/* حالت ورود کاربر - فشرده */
+.user-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 152, 0, 0.1);
+  padding: 4px 12px 4px 8px;
+  border-radius: 40px;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.user-avatar-compact {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff9800;
+}
+
+.family-status-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: #e8f5e9;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.logout-btn-compact {
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 6px 10px;
+  border-radius: 30px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.logout-btn-compact:hover {
+  background: #fecaca;
+  transform: scale(1.02);
+}
+
+/* حذف استایل‌های قدیمی user-panel و topbar */
+.user-panel,
+.topbar {
+  display: none;
+}
+
+/* بقیه استایل‌ها به همین صورت باقی می‌مانند */
