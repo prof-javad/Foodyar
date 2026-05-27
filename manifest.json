@@ -2,12 +2,12 @@
   "name": "فودیار",
   "short_name": "فودیار",
   "description": "مدیریت و ذخیره‌سازی غذاهای مورد علاقه",
-  "start_url": "/",
+  "start_url": "/Foodyar/",
   "display": "standalone",
   "theme_color": "#ff9800",
   "background_color": "#fff7ec",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/Foodyar/",
   "lang": "fa",
   "dir": "rtl",
   "icons": [
@@ -67,7 +67,7 @@
       "name": "غذای جدید",
       "short_name": "جدید",
       "description": "اضافه کردن غذای جدید",
-      "url": "/?action=new",
+      "url": "/Foodyar/?action=new",
       "icons": [
         {
           "src": "https://emojicdn.elk.sh/➕?style=apple&size=96",
@@ -79,7 +79,7 @@
       "name": "انتخاب تصادفی",
       "short_name": "تصادفی",
       "description": "انتخاب تصادفی غذا",
-      "url": "/?action=random",
+      "url": "/Foodyar/?action=random",
       "icons": [
         {
           "src": "https://emojicdn.elk.sh/🎲?style=apple&size=96",
