@@ -559,40 +559,68 @@ window.addEventListener("click", (e) => {
 });
 
 // ==================== AUTH SYSTEM ====================
+// ==================== AUTH SYSTEM با هدر جدید ====================
+const guestMode = document.getElementById("guestMode");
+const userMode = document.getElementById("userMode");
+const userAvatarCompact = document.getElementById("userAvatar");
+const userFamilyStatus = document.getElementById("userFamilyStatus");
+
 async function loginWithGoogle() {
   try {
     loginBtn.disabled = true;
-    loginBtn.innerHTML = "⏳ در حال ورود...";
+    loginBtn.innerHTML = "⏳ ...";
     const result = await signInWithPopup(auth, provider);
     currentUser = result.user;
     showToast("🔒 ورود انجام شد", "success");
-  } catch (error) { console.error(error); showToast("❌ خطا در ورود", "error"); } 
-  finally { loginBtn.disabled = false; loginBtn.innerHTML = "🔐 ورود"; }
+  } catch (error) { 
+    console.error(error); 
+    showToast("❌ خطا در ورود", "error"); 
+  } finally { 
+    loginBtn.disabled = false; 
+    loginBtn.innerHTML = "🔐 ورود"; 
+  }
 }
 
 async function logoutUser() {
   const isConfirmed = confirm("آیا مطمئنی می‌خوای خارج بشی؟");
   if (!isConfirmed) return;
-  try { await signOut(auth); showToast("🚪 خارج شدی", "info"); } 
-  catch (error) { console.error(error); showToast("❌ خطا در خروج", "error"); }
+  try { 
+    await signOut(auth); 
+    showToast("🚪 خارج شدی", "info"); 
+  } catch (error) { 
+    console.error(error); 
+    showToast("❌ خطا در خروج", "error"); 
+  }
 }
 
 function updateAccessUI() {
   // کنترل دکمه‌های موجود در کارت‌ها
   document.querySelectorAll(".edit-btn, .delete-btn, .favorite-btn").forEach(el => {
-    if (!isApprovedUser) { el.classList.add("hidden"); if (el.classList.contains("favorite-btn")) el.disabled = true; } 
-    else { el.classList.remove("hidden"); if (el.classList.contains("favorite-btn")) el.disabled = false; }
+    if (!isApprovedUser) { 
+      el.classList.add("hidden"); 
+      if (el.classList.contains("favorite-btn")) el.disabled = true; 
+    } else { 
+      el.classList.remove("hidden"); 
+      if (el.classList.contains("favorite-btn")) el.disabled = false; 
+    }
   });
   
   // کنترل فرم افزودن خوراک
   const form = document.getElementById("foodForm");
-  if (form) { form.style.display = isApprovedUser ? "grid" : "none"; }
+  if (form) { 
+    form.style.display = isApprovedUser ? "grid" : "none"; 
+  }
   
   // کنترل کل بخش افزودن خوراک
   const addSection = document.querySelector(".add-food-section");
   if (addSection) {
-    if (isApprovedUser) { addSection.style.opacity = "1"; addSection.style.pointerEvents = "auto"; } 
-    else { addSection.style.opacity = "0.6"; addSection.style.pointerEvents = "none"; }
+    if (isApprovedUser) { 
+      addSection.style.opacity = "1"; 
+      addSection.style.pointerEvents = "auto"; 
+    } else { 
+      addSection.style.opacity = "0.6"; 
+      addSection.style.pointerEvents = "none"; 
+    }
   }
 }
 
@@ -602,38 +630,45 @@ onAuthStateChanged(auth, (user) => {
   
   if (user) {
     isApprovedUser = allowedEmails.includes(user.email);
-    console.log("Is approved user:", isApprovedUser);
-    console.log("User email:", user.email);
-    console.log("Allowed emails:", allowedEmails);
     
-    userName.textContent = user.displayName || "عضو خانواده";
-    if (user.photoURL) userAvatar.src = user.photoURL;
-    loginBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
+    // نمایش حالت کاربر لاگین شده
+    guestMode.classList.add("hidden");
+    userMode.classList.remove("hidden");
     
-    if (isApprovedUser) {
-      userStatus.innerHTML = "🟢 عضو خانواده";
-      userStatus.className = "family-status";
-      showToast(`✅ خوش آمدی ${user.displayName}`, "success");
+    // تنظیم عکس پروفایل
+    if (user.photoURL) {
+      userAvatarCompact.src = user.photoURL;
     } else {
-      userStatus.innerHTML = "👀 حالت مشاهده";
-      userStatus.className = "guest-status";
+      userAvatarCompact.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=ff9800&color=fff`;
+    }
+    
+    // تنظیم وضعیت عضویت
+    if (isApprovedUser) {
+      userFamilyStatus.innerHTML = "🟢 عضو خانواده";
+      userFamilyStatus.style.background = "#e8f5e9";
+      userFamilyStatus.style.color = "#16a34a";
+      showToast(`✅ خوش آمدی ${user.displayName || "عضو خانواده"}`, "success");
+    } else {
+      userFamilyStatus.innerHTML = "👀 حالت مشاهده";
+      userFamilyStatus.style.background = "#fff3e0";
+      userFamilyStatus.style.color = "#f97316";
       showToast("⛔ دسترسی ویرایش نداری (فقط ایمیل‌های مجاز)", "error");
     }
   } else {
     isApprovedUser = false;
-    userName.textContent = "مهمان";
-    userAvatar.src = "https://ui-avatars.com/api/?name=Guest";
-    userStatus.innerHTML = "👀 حالت مشاهده";
-    userStatus.className = "guest-status";
-    loginBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
+    // نمایش حالت مهمان
+    guestMode.classList.remove("hidden");
+    userMode.classList.add("hidden");
   }
   updateAccessUI();
 });
 
-if (loginBtn) loginBtn.addEventListener("click", loginWithGoogle);
-if (logoutBtn) logoutBtn.addEventListener("click", logoutUser);
+// اتصال دکمه‌ها (دقت کنید loginBtn و logoutBtn با idهای جدید)
+const loginBtnNew = document.getElementById("loginBtn");
+const logoutBtnNew = document.getElementById("logoutBtn");
+
+if (loginBtnNew) loginBtnNew.addEventListener("click", loginWithGoogle);
+if (logoutBtnNew) logoutBtnNew.addEventListener("click", logoutUser);
 
 // ==================== INIT ====================
 loadColumns();
