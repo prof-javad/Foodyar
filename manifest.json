@@ -1,0 +1,93 @@
+{
+  "name": "فودیار",
+  "short_name": "فودیار",
+  "description": "مدیریت و ذخیره‌سازی غذاهای مورد علاقه",
+  "start_url": "/Foodyar/",
+  "display": "standalone",
+  "theme_color": "#ff9800",
+  "background_color": "#fff7ec",
+  "orientation": "portrait",
+  "scope": "/Foodyar/",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=72",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=96",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=128",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=144",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=152",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=384",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "https://emojicdn.elk.sh/🍔?style=apple&size=512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://via.placeholder.com/400x800?text=Foodyar+App",
+      "sizes": "400x800",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "صفحه اصلی فودیار"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "غذای جدید",
+      "short_name": "جدید",
+      "description": "اضافه کردن غذای جدید",
+      "url": "/Foodyar/?action=new",
+      "icons": [
+        {
+          "src": "https://emojicdn.elk.sh/➕?style=apple&size=96",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "انتخاب تصادفی",
+      "short_name": "تصادفی",
+      "description": "انتخاب تصادفی غذا",
+      "url": "/Foodyar/?action=random",
+      "icons": [
+        {
+          "src": "https://emojicdn.elk.sh/🎲?style=apple&size=96",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "categories": ["food", "lifestyle", "productivity"],
+  "prefer_related_applications": false
+}
