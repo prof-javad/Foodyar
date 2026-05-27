@@ -16,26 +16,26 @@
 
 <body>
 
-<div class="user-panel" id="userPanel">
-  <div class="user-info">
-    <img id="userAvatar" class="user-avatar" src="https://ui-avatars.com/api/?name=Guest" />
-    <div class="user-meta">
-      <div id="userName">مهمان</div>
-      <div id="userStatus" class="guest-status">👀 حالت مشاهده</div>
-    </div>
-  </div>
-  <div class="auth-actions">
-    <button id="loginBtn" class="login-btn">🔐 ورود</button>
-    <button id="logoutBtn" class="logout-btn hidden">🚪 خروج</button>
-  </div>
-</div>
-
-<div class="topbar">
+<!-- هدر ترکیبی: دکمه تصادفی سمت راست، بخش کاربری سمت چپ -->
+<div class="main-header">
   <button id="randomBtn" class="random-btn">
     🎲 امروز چی میل کنیم؟
   </button>
-  <div class="logo-area">
-    <span class="logo-emoji">🍴</span>
+  
+  <div class="user-area" id="userArea">
+    <!-- حالت خروج (مهمان) -->
+    <div id="guestMode" class="guest-mode">
+      <button id="loginBtn" class="login-btn">🔐 ورود</button>
+    </div>
+    
+    <!-- حالت ورود (فقط برای کاربران لاگین شده) -->
+    <div id="userMode" class="user-mode hidden">
+      <div class="user-info-compact">
+        <img id="userAvatar" class="user-avatar-compact" src="https://ui-avatars.com/api/?name=User" />
+        <span id="userFamilyStatus" class="family-status-badge">عضو خانواده</span>
+      </div>
+      <button id="logoutBtn" class="logout-btn-compact">🚪</button>
+    </div>
   </div>
 </div>
 
