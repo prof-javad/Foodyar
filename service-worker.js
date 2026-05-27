@@ -1,11 +1,11 @@
 const CACHE_NAME = 'foodyar-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/firebase.js',
-  '/manifest.json',
+  '/Foodyar/',
+  '/Foodyar/index.html',
+  '/Foodyar/style.css',
+  '/Foodyar/script.js',
+  '/Foodyar/firebase.js',
+  '/Foodyar/manifest.json',
   'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap',
   'https://fonts.gstatic.com/s/vazirmatn/v11/D2M8YpZ8n8kGXKqjQr8HnA.woff2'
 ];
@@ -48,6 +48,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // اصلاح URL برای تطابق با مسیر پایه
+  let requestUrl = event.request.url;
+  if (requestUrl.includes('/Foodyar/') && !requestUrl.includes('.')) {
+    requestUrl = '/Foodyar/';
+  }
+  
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -65,8 +71,8 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       }).catch(() => {
         // اگر آفلاین بود و صفحه اصلی بود، صفحه آفلاین برگردون
-        if (event.request.url.includes('/') && !event.request.url.includes('.')) {
-          return caches.match('/index.html');
+        if (event.request.url.includes('/Foodyar/') && !event.request.url.includes('.')) {
+          return caches.match('/Foodyar/index.html');
         }
         return new Response('شما آفلاین هستید!', {
           status: 503,
@@ -88,8 +94,6 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncFoods() {
-  // این تابع برای همگام‌سازی عملیات ذخیره شده در آفلاین
-  // در نسخه کامل می‌توانید IndexedDB برای ذخیره عملیات داشته باشید
   console.log('Syncing foods...');
 }
 
