@@ -196,34 +196,52 @@ window.addEventListener("online", () => { isOnline = true; updateStatusUI(); sho
 window.addEventListener("offline", () => { isOnline = false; updateStatusUI(); });
 
 // ==================== FIREBASE REALTIME SYNC ====================
+// ==================== FIREBASE REALTIME SYNC (بهینه شده) ====================
+let syncInitialized = false;
+
 function startRealtimeSync() {
-  if (unsubscribe) unsubscribe();
+  // جلوگیری از ایجاد چندین اتصال همزمان
+  if (syncInitialized) {
+    console.log("Sync already initialized, skipping...");
+    return;
+  }
   
-  unsubscribe = onSnapshot(foodsRef, 
-    (snapshot) => {
-      isSyncing = false;
-      updateStatusUI();
-      foods = [];
-      snapshot.forEach((doc) => { 
-        foods.push({ firebaseId: doc.id, ...doc.data() }); 
-      });
-      
-      if (authChecked) {
-        skeletonContainer.style.display = "none";
-        foodsContainer.style.display = "grid";
-        updateFavoriteFilterButtons();
-        renderFoods();
-      } else {
-        pendingFoods = foods;
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+  }
+  
+  syncInitialized = true;
+  
+  // استفاده از setTimeout برای推迟 اتصال به Firebase
+  setTimeout(() => {
+    unsubscribe = onSnapshot(foodsRef, 
+      (snapshot) => {
+        isSyncing = false;
+        updateStatusUI();
+        foods = [];
+        snapshot.forEach((doc) => { 
+          foods.push({ firebaseId: doc.id, ...doc.data() }); 
+        });
+        
+        if (authChecked) {
+          skeletonContainer.style.display = "none";
+          foodsContainer.style.display = "grid";
+          updateFavoriteFilterButtons();
+          renderFoods();
+        } else {
+          pendingFoods = foods;
+        }
+      },
+      (error) => { 
+        console.error("Firestore error:", error); 
+        skeletonContainer.style.display = "none"; 
+        foodsContainer.style.display = "grid"; 
+        showToast("خطا در همگام‌سازی", "error");
+        syncInitialized = false; // اجازه تلاش مجدد
       }
-    },
-    (error) => { 
-      console.error("Firestore error:", error); 
-      skeletonContainer.style.display = "none"; 
-      foodsContainer.style.display = "grid"; 
-      showToast("خطا در همگام‌سازی", "error"); 
-    }
-  );
+    );
+  }, 100);
 }
 
 // ==================== UPDATE FAVORITE FILTERS ====================
@@ -680,5 +698,9 @@ if (loginBtn) loginBtn.addEventListener("click", loginWithGoogle);
 if (logoutBtn) logoutBtn.addEventListener("click", logoutUser);
 
 // ==================== INIT ====================
-loadColumns();
-startRealtimeSync();
+// اطمینان از اجرای یکبار
+if (!window._initDone) {
+  window._initDone = true;
+  loadColumns();
+  startRealtimeSync();
+}
