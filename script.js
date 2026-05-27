@@ -65,7 +65,7 @@ let isApprovedUser = false;
 const allowedEmails = [
   "jjwad1817@gmail.com",  // <--- ایمیل خود را اینجا وارد کنید
   "ashraf.ir.090@gmail.com",
-  "family@gmail.com"
+  "eli985143@gmail.com"
 ];
 
 // ==================== تبدیل عکس به Base64 ====================
