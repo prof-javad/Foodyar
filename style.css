@@ -247,11 +247,12 @@ body {
   min-width: 0; /* برای جلوگیری از سرریز در موبایل */
 }
 
+/* پیدا کنید و جایگزین کنید */
 .upload-image-btn {
   padding: 12px 16px;
   border-radius: 16px;
   border: none;
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, #ff9800, #ff4d6d); /* تغییر رنگ */
   color: white;
   font-family: inherit;
   cursor: pointer;
@@ -263,6 +264,7 @@ body {
 
 .upload-image-btn:hover {
   transform: scale(1.01);
+  background: linear-gradient(135deg, #ff8c00, #ff3355); /* حالت hover هماهنگ */
 }
 
 .upload-image-btn:disabled {
