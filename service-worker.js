@@ -1,21 +1,24 @@
-const CACHE_NAME = 'foodyar-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'foodyar-v2';
+const STATIC_ASSETS = [
   '/Foodyar/',
   '/Foodyar/index.html',
   '/Foodyar/style.css',
   '/Foodyar/script.js',
   '/Foodyar/firebase.js',
-  '/Foodyar/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap',
-  'https://fonts.gstatic.com/s/vazirmatn/v11/D2M8YpZ8n8kGXKqjQr8HnA.woff2'
+  '/Foodyar/manifest.json'
 ];
 
-// نصب سرویس ورکر و کش کردن فایل‌ها
+const EXTERNAL_ASSETS = [
+  'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap'
+];
+
+// نصب سرویس ورکر
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    Promise.all([
+      caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
+      caches.open('fonts-cache').then((cache) => cache.addAll(EXTERNAL_ASSETS))
+    ])
   );
   self.skipWaiting();
 });
@@ -26,7 +29,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== 'fonts-cache') {
             return caches.delete(cacheName);
           }
         })
@@ -36,57 +39,42 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// استراتژی: Cache First, سپس Network
+// استراتژی: Network First برای HTML، Cache First برای بقیه
 self.addEventListener('fetch', (event) => {
-  // فقط درخواست‌های GET را هندل کن
-  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
   
-  // درخواست‌های Firebase را از کش نگیر (همیشه آنلاین باشن)
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic')) {
+  // درخواست‌های Firebase را نادیده بگیر
+  if (url.hostname.includes('firebase') || 
+      url.hostname.includes('googleapis') ||
+      url.hostname.includes('gstatic')) {
     return;
   }
   
-  // اصلاح URL برای تطابق با مسیر پایه
-  let requestUrl = event.request.url;
-  if (requestUrl.includes('/Foodyar/') && !requestUrl.includes('.')) {
-    requestUrl = '/Foodyar/';
+  // برای صفحات HTML -先用 Network
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
   }
   
+  // برای بقیه assets - Cache First
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      return fetch(event.request).then((networkResponse) => {
-        // فقط پاسخ‌های موفق را کش کن
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // اگر آفلاین بود و صفحه اصلی بود، صفحه آفلاین برگردون
-        if (event.request.url.includes('/Foodyar/') && !event.request.url.includes('.')) {
-          return caches.match('/Foodyar/index.html');
-        }
-        return new Response('شما آفلاین هستید!', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: new Headers({
-            'Content-Type': 'text/html; charset=utf-8',
-          })
-        });
-      });
-    })
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+      .catch(() => new Response('آفلاین', { status: 503 }))
   );
 });
 
-// همگام‌سازی پس‌زمینه برای عملیات آفلاین
+// همگام‌سازی پس‌زمینه
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-foods') {
     event.waitUntil(syncFoods());
@@ -97,7 +85,7 @@ async function syncFoods() {
   console.log('Syncing foods...');
 }
 
-// پوش نوتیفیکیشن (اختیاری)
+// پوش نوتیفیکیشن
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'یادآوری غذا!',
