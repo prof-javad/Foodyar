@@ -278,12 +278,23 @@ function renderFoods() {
   filteredFoods.forEach((food) => {
     const card = document.createElement("div");
     card.className = "food-card";
+    
+    // نمایش لیست علاقه‌مندی‌ها فقط برای اعضای خانواده
+    let favoritesHtml = '';
+    if (isApprovedUser) {
+      favoritesHtml = `<div class="favorite-list">${food.favorites && food.favorites.length ? "❤️ " + food.favorites.join(" ، ") : "هنوز کسی علاقه‌مند نشده"}</div>`;
+    } else {
+      // برای کاربران غیرمجاز، فقط تعداد علاقه‌مندی‌ها را نشان بده (بدون اسم)
+      const favCount = food.favorites && food.favorites.length ? food.favorites.length : 0;
+      favoritesHtml = `<div class="favorite-list">❤️ ${favCount} نفر این غذا را دوست دارند</div>`;
+    }
+    
     card.innerHTML = `
       ${food.image ? `<img class="food-image" src="${food.image}" alt="${food.name}" onerror="this.src='https://via.placeholder.com/400x300?text=🍲'">` : `<div class="food-image-placeholder">🍲</div>`}
       <div class="food-content">
         <div class="food-header"><h3 class="food-title">${escapeHtml(food.name)}</h3><span>🍴</span></div>
         <div class="category-tag">${food.category}</div>
-        <div class="favorite-list">${food.favorites && food.favorites.length ? "❤️ " + food.favorites.join(" ، ") : "هنوز کسی علاقه‌مند نشده"}</div>
+        ${favoritesHtml}
         <div class="card-actions">
           <button class="favorite-btn" onclick="window.openFavoriteModal('${food.firebaseId}')">⭐ علاقه‌مندان</button>
           <button class="edit-btn" onclick="window.openEditModal('${food.firebaseId}')">✏️ ویرایش</button>
