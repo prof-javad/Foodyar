@@ -42,11 +42,12 @@ const statusChip = document.getElementById("statusChip");
 const viewColBtns = document.querySelectorAll(".view-col-btn");
 
 // Auth Elements
+const guestMode = document.getElementById("guestMode");
+const userMode = document.getElementById("userMode");
+const userAvatarCompact = document.getElementById("userAvatar");
+const userFamilyStatus = document.getElementById("userFamilyStatus");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const userName = document.getElementById("userName");
-const userAvatar = document.getElementById("userAvatar");
-const userStatus = document.getElementById("userStatus");
 
 const foodsRef = collection(db, "foods");
 let foods = [];
@@ -56,17 +57,37 @@ let selectedFavoriteFilters = [];
 let unsubscribe = null;
 let isOnline = navigator.onLine;
 let isSyncing = false;
+let authChecked = false;
+let pendingFoods = null;
 
 const ALLOWED_MEMBERS = ["مامان", "الهه", "جواد"];
 let currentUser = null;
 let isApprovedUser = false;
 
-// ایمیل‌های مجاز - ایمیل خود را اینجا وارد کنید
+// ایمیل‌های مجاز
 const allowedEmails = [
-  "jjwad1817@gmail.com",  // <--- ایمیل خود را اینجا وارد کنید
+  "jjwad1817@gmail.com",
   "ashraf.ir.090@gmail.com",
   "family@gmail.com"
 ];
+
+// ==================== نمایش سریع اسکلتون ====================
+function showSkeletonImmediately() {
+  if (!skeletonContainer) return;
+  const cols = localStorage.getItem("foodColumns") || "2";
+  skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  skeletonContainer.style.display = "grid";
+  foodsContainer.style.display = "none";
+  
+  let skeletons = '';
+  for (let i = 0; i < 6; i++) {
+    skeletons += `<div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-category"></div><div class="skeleton-actions"></div></div></div>`;
+  }
+  skeletonContainer.innerHTML = skeletons;
+}
+
+// اجرای فوری اسکلتون
+showSkeletonImmediately();
 
 // ==================== تبدیل عکس به Base64 ====================
 function convertImageToBase64(file) {
@@ -78,36 +99,30 @@ function convertImageToBase64(file) {
   });
 }
 
-// ==================== آپلود عکس (عمومی) - بدون capture مستقیم ====================
+// ==================== آپلود عکس ====================
 async function uploadImage(inputElement, buttonElement) {
-  // ایجاد input فایل - بدون capture تا گزینه گالری/دوربین رو بپرسه
   const fileInput = document.createElement("input");
   fileInput.type = "file";
   fileInput.accept = "image/*";
-  // حذف خط capture تا در موبایل انتخابگر نمایش داده بشه
   
   fileInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // بررسی حجم فایل (حداکثر 5 مگابایت)
     if (file.size > 5 * 1024 * 1024) {
       showToast("حجم عکس نباید بیشتر از 5 مگابایت باشد", "error");
       return;
     }
     
-    // فعال کردن حالت لودینگ روی دکمه
     const originalText = buttonElement.innerHTML;
     buttonElement.innerHTML = "⏳ در حال آپلود...";
     buttonElement.disabled = true;
     
     try {
-      // تبدیل عکس به Base64
       const base64 = await convertImageToBase64(file);
       inputElement.value = base64;
       showToast("✅ عکس با موفقیت آپلود شد", "success");
       
-      // اگه در مودال ویرایش هستیم، پیش‌نمایش رو هم بروز کن
       const previewImg = document.getElementById("previewImg");
       if (previewImg && inputElement.id === "editImage") {
         previewImg.src = base64;
@@ -180,37 +195,34 @@ function updateStatusUI() {
 window.addEventListener("online", () => { isOnline = true; updateStatusUI(); showToast("اتصال اینترنت برقرار شد ✅", "success"); });
 window.addEventListener("offline", () => { isOnline = false; updateStatusUI(); });
 
-// ==================== اسکلتون لودینگ ====================
-function generateSkeletonCards(count = 8) {
-  if (!skeletonContainer) return;
-  const cols = localStorage.getItem("foodColumns") || "2";
-  skeletonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-  let skeletons = '';
-  for (let i = 0; i < count; i++) {
-    skeletons += `<div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-category"></div><div class="skeleton-actions"></div></div></div>`;
-  }
-  skeletonContainer.innerHTML = skeletons;
-}
-
 // ==================== FIREBASE REALTIME SYNC ====================
 function startRealtimeSync() {
   if (unsubscribe) unsubscribe();
-  generateSkeletonCards(8);
-  skeletonContainer.style.display = "grid";
-  foodsContainer.style.display = "none";
   
   unsubscribe = onSnapshot(foodsRef, 
     (snapshot) => {
       isSyncing = false;
       updateStatusUI();
       foods = [];
-      snapshot.forEach((doc) => { foods.push({ firebaseId: doc.id, ...doc.data() }); });
-      skeletonContainer.style.display = "none";
-      foodsContainer.style.display = "grid";
-      updateFavoriteFilterButtons();
-      renderFoods();
+      snapshot.forEach((doc) => { 
+        foods.push({ firebaseId: doc.id, ...doc.data() }); 
+      });
+      
+      if (authChecked) {
+        skeletonContainer.style.display = "none";
+        foodsContainer.style.display = "grid";
+        updateFavoriteFilterButtons();
+        renderFoods();
+      } else {
+        pendingFoods = foods;
+      }
     },
-    (error) => { console.error("Firestore error:", error); skeletonContainer.style.display = "none"; foodsContainer.style.display = "grid"; showToast("خطا در همگام‌سازی", "error"); }
+    (error) => { 
+      console.error("Firestore error:", error); 
+      skeletonContainer.style.display = "none"; 
+      foodsContainer.style.display = "grid"; 
+      showToast("خطا در همگام‌سازی", "error"); 
+    }
   );
 }
 
@@ -279,18 +291,16 @@ function renderFoods() {
     const card = document.createElement("div");
     card.className = "food-card";
     
-    // نمایش لیست علاقه‌مندی‌ها فقط برای اعضای خانواده
     let favoritesHtml = '';
     if (isApprovedUser) {
       favoritesHtml = `<div class="favorite-list">${food.favorites && food.favorites.length ? "❤️ " + food.favorites.join(" ، ") : "هنوز کسی علاقه‌مند نشده"}</div>`;
     } else {
-      // برای کاربران غیرمجاز، فقط تعداد علاقه‌مندی‌ها را نشان بده (بدون اسم)
       const favCount = food.favorites && food.favorites.length ? food.favorites.length : 0;
       favoritesHtml = `<div class="favorite-list">❤️ ${favCount} نفر این غذا را دوست دارند</div>`;
     }
     
     card.innerHTML = `
-      ${food.image ? `<img class="food-image" src="${food.image}" alt="${food.name}" onerror="this.src='https://via.placeholder.com/400x300?text=🍲'">` : `<div class="food-image-placeholder">🍲</div>`}
+      ${food.image ? `<img class="food-image" src="${food.image}" alt="${food.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=🍲'">` : `<div class="food-image-placeholder">🍲</div>`}
       <div class="food-content">
         <div class="food-header"><h3 class="food-title">${escapeHtml(food.name)}</h3><span>🍴</span></div>
         <div class="category-tag">${food.category}</div>
@@ -352,7 +362,6 @@ if (uploadImageBtn) {
   });
 }
 
-// دکمه آپلود در مودال ویرایش
 const uploadEditImageBtn = document.getElementById("uploadEditImageBtn");
 const editImageInput = document.getElementById("editImage");
 if (uploadEditImageBtn && editImageInput) {
@@ -559,12 +568,6 @@ window.addEventListener("click", (e) => {
 });
 
 // ==================== AUTH SYSTEM ====================
-// ==================== AUTH SYSTEM با هدر جدید ====================
-const guestMode = document.getElementById("guestMode");
-const userMode = document.getElementById("userMode");
-const userAvatarCompact = document.getElementById("userAvatar");
-const userFamilyStatus = document.getElementById("userFamilyStatus");
-
 async function loginWithGoogle() {
   try {
     loginBtn.disabled = true;
@@ -594,7 +597,6 @@ async function logoutUser() {
 }
 
 function updateAccessUI() {
-  // کنترل دکمه‌های موجود در کارت‌ها
   document.querySelectorAll(".edit-btn, .delete-btn, .favorite-btn").forEach(el => {
     if (!isApprovedUser) { 
       el.classList.add("hidden"); 
@@ -605,13 +607,11 @@ function updateAccessUI() {
     }
   });
   
-  // کنترل فرم افزودن خوراک
   const form = document.getElementById("foodForm");
   if (form) { 
     form.style.display = isApprovedUser ? "grid" : "none"; 
   }
   
-  // کنترل کل بخش افزودن خوراک
   const addSection = document.querySelector(".add-food-section");
   if (addSection) {
     if (isApprovedUser) { 
@@ -624,51 +624,60 @@ function updateAccessUI() {
   }
 }
 
+let authTimeout = null;
+
 onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  console.log("Auth state changed:", user ? user.email : "No user");
+  if (authTimeout) clearTimeout(authTimeout);
   
-  if (user) {
-    isApprovedUser = allowedEmails.includes(user.email);
+  authTimeout = setTimeout(() => {
+    currentUser = user;
+    console.log("Auth state changed:", user ? user.email : "No user");
     
-    // نمایش حالت کاربر لاگین شده
-    guestMode.classList.add("hidden");
-    userMode.classList.remove("hidden");
-    
-    // تنظیم عکس پروفایل
-    if (user.photoURL) {
-      userAvatarCompact.src = user.photoURL;
+    if (user) {
+      isApprovedUser = allowedEmails.includes(user.email);
+      
+      guestMode.classList.add("hidden");
+      userMode.classList.remove("hidden");
+      
+      if (user.photoURL) {
+        userAvatarCompact.src = user.photoURL;
+      } else {
+        userAvatarCompact.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=ff9800&color=fff&length=1`;
+      }
+      
+      if (isApprovedUser) {
+        userFamilyStatus.innerHTML = "🟢 عضو خانواده";
+        userFamilyStatus.style.background = "#e8f5e9";
+        userFamilyStatus.style.color = "#16a34a";
+        if (!authChecked) showToast(`✅ خوش آمدی`, "success");
+      } else {
+        userFamilyStatus.innerHTML = "👀 حالت مشاهده";
+        userFamilyStatus.style.background = "#fff3e0";
+        userFamilyStatus.style.color = "#f97316";
+        if (!authChecked) showToast("⛔ دسترسی ویرایش نداری", "error");
+      }
     } else {
-      userAvatarCompact.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=ff9800&color=fff`;
+      isApprovedUser = false;
+      guestMode.classList.remove("hidden");
+      userMode.classList.add("hidden");
     }
     
-    // تنظیم وضعیت عضویت
-    if (isApprovedUser) {
-      userFamilyStatus.innerHTML = "🟢 عضو خانواده";
-      userFamilyStatus.style.background = "#e8f5e9";
-      userFamilyStatus.style.color = "#16a34a";
-      showToast(`✅ خوش آمدی ${user.displayName || "عضو خانواده"}`, "success");
-    } else {
-      userFamilyStatus.innerHTML = "👀 حالت مشاهده";
-      userFamilyStatus.style.background = "#fff3e0";
-      userFamilyStatus.style.color = "#f97316";
-      showToast("⛔ دسترسی ویرایش نداری (فقط ایمیل‌های مجاز)", "error");
+    authChecked = true;
+    updateAccessUI();
+    
+    if (pendingFoods && pendingFoods.length > 0) {
+      foods = pendingFoods;
+      skeletonContainer.style.display = "none";
+      foodsContainer.style.display = "grid";
+      updateFavoriteFilterButtons();
+      renderFoods();
+      pendingFoods = null;
     }
-  } else {
-    isApprovedUser = false;
-    // نمایش حالت مهمان
-    guestMode.classList.remove("hidden");
-    userMode.classList.add("hidden");
-  }
-  updateAccessUI();
+  }, 10);
 });
 
-// اتصال دکمه‌ها (دقت کنید loginBtn و logoutBtn با idهای جدید)
-const loginBtnNew = document.getElementById("loginBtn");
-const logoutBtnNew = document.getElementById("logoutBtn");
-
-if (loginBtnNew) loginBtnNew.addEventListener("click", loginWithGoogle);
-if (logoutBtnNew) logoutBtnNew.addEventListener("click", logoutUser);
+if (loginBtn) loginBtn.addEventListener("click", loginWithGoogle);
+if (logoutBtn) logoutBtn.addEventListener("click", logoutUser);
 
 // ==================== INIT ====================
 loadColumns();
